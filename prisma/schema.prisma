@@ -1,0 +1,857 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── MULTI-TENANT CORE ───────────────────────────────────────────────────────
+
+model Organization {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  logo          String?
+  plan          PlanType @default(STARTER)
+  planExpiresAt DateTime?
+  currency      String   @default("TRY")
+  timezone      String   @default("Europe/Istanbul")
+  locale        String   @default("tr")
+  taxRate       Float    @default(0)
+  taxIncluded   Boolean  @default(true)
+  address       String?
+  phone         String?
+  email         String?
+  website       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  locations     Location[]
+  members       OrganizationMember[]
+  invites       OrganizationInvite[]
+  subscriptions Subscription[]
+  menuCategories MenuCategory[]
+  menuItems      MenuItem[]
+  modifierGroups ModifierGroup[]
+  customers      Customer[]
+  promotions     Promotion[]
+  notifications  Notification[]
+}
+
+enum PlanType {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  organizationId     String
+  stripeSubId        String?            @unique
+  stripePriceId      String?
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+model OrganizationMember {
+  id             String     @id @default(cuid())
+  organizationId String
+  userId         String
+  role           MemberRole @default(STAFF)
+  locationId     String?
+  createdAt      DateTime   @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location     Location?    @relation(fields: [locationId], references: [id])
+
+  @@unique([organizationId, userId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MANAGER
+  CASHIER
+  WAITER
+  KITCHEN
+  STAFF
+}
+
+model OrganizationInvite {
+  id             String     @id @default(cuid())
+  organizationId String
+  email          String
+  role           MemberRole @default(STAFF)
+  token          String     @unique @default(cuid())
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime   @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── USER & AUTH ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  memberships  OrganizationMember[]
+  clockEvents  ClockEvent[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── LOCATION ────────────────────────────────────────────────────────────────
+
+model Location {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  address        String?
+  phone          String?
+  email          String?
+  isActive       Boolean  @default(true)
+  openingHours   Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members        OrganizationMember[]
+  tables         Table[]
+  orders         Order[]
+  reservations   Reservation[]
+  inventory      InventoryItem[]
+  shifts         Shift[]
+  receipts       Receipt[]
+  expenses       Expense[]
+  stockMovements StockMovement[]
+  suppliers      Supplier[]
+}
+
+// ─── MENU ────────────────────────────────────────────────────────────────────
+
+model MenuCategory {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  nameEn         String?
+  description    String?
+  image          String?
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  isAvailable    Boolean  @default(true)
+  availableFrom  String?
+  availableTo    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        MenuItem[]
+}
+
+model MenuItem {
+  id              String   @id @default(cuid())
+  organizationId  String
+  categoryId      String
+  name            String
+  nameEn          String?
+  description     String?
+  image           String?
+  price           Float
+  cost            Float?
+  taxRate         Float?
+  sku             String?
+  barcode         String?
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  isAvailable     Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  preparationTime Int?
+  calories        Int?
+  allergens       String[]
+  tags            String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category       MenuCategory           @relation(fields: [categoryId], references: [id])
+  modifierGroups MenuItemModifierGroup[]
+  variants       MenuItemVariant[]
+  orderItems     OrderItem[]
+  recipeItems    RecipeItem[]
+}
+
+model MenuItemVariant {
+  id         String  @id @default(cuid())
+  menuItemId String
+  name       String
+  price      Float
+  cost       Float?
+  sku        String?
+  isActive   Boolean @default(true)
+
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+}
+
+model ModifierGroup {
+  id             String  @id @default(cuid())
+  organizationId String
+  name           String
+  minSelect      Int     @default(0)
+  maxSelect      Int     @default(1)
+  isRequired     Boolean @default(false)
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  modifiers    Modifier[]
+  menuItems    MenuItemModifierGroup[]
+}
+
+model Modifier {
+  id              String  @id @default(cuid())
+  modifierGroupId String
+  name            String
+  price           Float   @default(0)
+  cost            Float?
+  isDefault       Boolean @default(false)
+  isActive        Boolean @default(true)
+  sortOrder       Int     @default(0)
+
+  group         ModifierGroup       @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+  orderItemMods OrderItemModifier[]
+}
+
+model MenuItemModifierGroup {
+  menuItemId      String
+  modifierGroupId String
+  sortOrder       Int    @default(0)
+
+  menuItem      MenuItem      @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  modifierGroup ModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@id([menuItemId, modifierGroupId])
+}
+
+// ─── TABLES ──────────────────────────────────────────────────────────────────
+
+model Table {
+  id         String      @id @default(cuid())
+  locationId String
+  name       String
+  capacity   Int         @default(4)
+  section    String?
+  posX       Float       @default(0)
+  posY       Float       @default(0)
+  width      Float       @default(80)
+  height     Float       @default(80)
+  shape      TableShape  @default(RECTANGLE)
+  status     TableStatus @default(AVAILABLE)
+  qrCode     String?     @unique
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  location     Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  reservations Reservation[]
+}
+
+enum TableShape {
+  RECTANGLE
+  CIRCLE
+  SQUARE
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  CLEANING
+  INACTIVE
+}
+
+// ─── ORDERS ──────────────────────────────────────────────────────────────────
+
+model Order {
+  id             String        @id @default(cuid())
+  locationId     String
+  tableId        String?
+  customerId     String?
+  staffId        String?
+  orderNumber    String
+  type           OrderType     @default(DINE_IN)
+  status         OrderStatus   @default(PENDING)
+  paymentStatus  PaymentStatus @default(UNPAID)
+  subtotal       Float         @default(0)
+  taxAmount      Float         @default(0)
+  discountAmount Float         @default(0)
+  tipAmount      Float         @default(0)
+  totalAmount    Float         @default(0)
+  notes          String?
+  source         OrderSource   @default(POS)
+  estimatedAt    DateTime?
+  servedAt       DateTime?
+  completedAt    DateTime?
+  cancelledAt    DateTime?
+  cancelReason   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  location       Location        @relation(fields: [locationId], references: [id])
+  table          Table?          @relation(fields: [tableId], references: [id])
+  customer       Customer?       @relation(fields: [customerId], references: [id])
+  items          OrderItem[]
+  receipt        Receipt?
+  kitchenTickets KitchenTicket[]
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEOUT
+  DELIVERY
+  ONLINE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+enum OrderSource {
+  POS
+  ONLINE
+  DELIVERY_APP
+  PHONE
+  KIOSK
+}
+
+model OrderItem {
+  id            String          @id @default(cuid())
+  orderId       String
+  menuItemId    String
+  variantId     String?
+  quantity      Int             @default(1)
+  unitPrice     Float
+  totalPrice    Float
+  notes         String?
+  status        OrderItemStatus @default(PENDING)
+  sentToKitchen Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  order     Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem  MenuItem           @relation(fields: [menuItemId], references: [id])
+  modifiers OrderItemModifier[]
+}
+
+enum OrderItemStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+model OrderItemModifier {
+  id          String @id @default(cuid())
+  orderItemId String
+  modifierId  String
+  price       Float  @default(0)
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifier  Modifier  @relation(fields: [modifierId], references: [id])
+}
+
+// ─── KITCHEN ─────────────────────────────────────────────────────────────────
+
+model KitchenTicket {
+  id          String              @id @default(cuid())
+  orderId     String
+  station     String?
+  status      KitchenTicketStatus @default(PENDING)
+  priority    Int                 @default(0)
+  notes       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum KitchenTicketStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+// ─── PAYMENTS & RECEIPTS ─────────────────────────────────────────────────────
+
+model Receipt {
+  id             String    @id @default(cuid())
+  orderId        String    @unique
+  locationId     String
+  receiptNumber  String
+  subtotal       Float
+  taxAmount      Float
+  discountAmount Float     @default(0)
+  tipAmount      Float     @default(0)
+  totalAmount    Float
+  createdAt      DateTime  @default(now())
+
+  order    Order     @relation(fields: [orderId], references: [id])
+  location Location  @relation(fields: [locationId], references: [id])
+  payments Payment[]
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  receiptId String
+  method    PaymentMethod
+  amount    Float
+  reference String?
+  stripeId  String?
+  createdAt DateTime      @default(now())
+
+  receipt Receipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  GIFT_CARD
+  LOYALTY_POINTS
+  ONLINE
+  BANK_TRANSFER
+}
+
+// ─── RESERVATIONS ────────────────────────────────────────────────────────────
+
+model Reservation {
+  id           String            @id @default(cuid())
+  locationId   String
+  tableId      String?
+  customerId   String?
+  guestName    String
+  guestPhone   String?
+  guestEmail   String?
+  guestCount   Int
+  date         DateTime
+  duration     Int               @default(90)
+  status       ReservationStatus @default(PENDING)
+  notes        String?
+  source       String?
+  reminderSent Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  location Location  @relation(fields: [locationId], references: [id])
+  table    Table?    @relation(fields: [tableId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// ─── CUSTOMERS & LOYALTY ─────────────────────────────────────────────────────
+
+model Customer {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  email          String?
+  phone          String?
+  birthdate      DateTime?
+  notes          String?
+  tags           String[]
+  loyaltyPoints  Int       @default(0)
+  totalSpent     Float     @default(0)
+  visitCount     Int       @default(0)
+  lastVisitAt    DateTime?
+  isBlacklisted  Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orders           Order[]
+  reservations     Reservation[]
+  loyaltyHistory   LoyaltyTransaction[]
+  feedback         CustomerFeedback[]
+}
+
+model LoyaltyTransaction {
+  id         String           @id @default(cuid())
+  customerId String
+  type       LoyaltyTransType
+  points     Int
+  orderId    String?
+  notes      String?
+  createdAt  DateTime         @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+enum LoyaltyTransType {
+  EARN
+  REDEEM
+  EXPIRE
+  ADJUST
+  BONUS
+}
+
+model CustomerFeedback {
+  id         String   @id @default(cuid())
+  customerId String?
+  orderId    String?
+  locationId String?
+  rating     Int
+  comment    String?
+  tags       String[]
+  isPublic   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+}
+
+// ─── INVENTORY ───────────────────────────────────────────────────────────────
+
+model InventoryCategory {
+  id             String @id @default(cuid())
+  organizationId String
+  name           String
+
+  items InventoryItem[]
+}
+
+model InventoryItem {
+  id          String  @id @default(cuid())
+  locationId  String
+  supplierId  String?
+  categoryId  String?
+  name        String
+  sku         String?
+  unit        String  @default("kg")
+  quantity    Float   @default(0)
+  minQuantity Float   @default(0)
+  maxQuantity Float?
+  costPerUnit Float   @default(0)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  location       Location           @relation(fields: [locationId], references: [id])
+  supplier       Supplier?          @relation(fields: [supplierId], references: [id])
+  category       InventoryCategory? @relation(fields: [categoryId], references: [id])
+  stockMovements StockMovement[]
+  recipeItems    RecipeItem[]
+  purchaseItems  PurchaseOrderItem[]
+}
+
+model RecipeItem {
+  id              String @id @default(cuid())
+  menuItemId      String
+  inventoryItemId String
+  quantity        Float
+  unit            String
+
+  menuItem      MenuItem      @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  @@unique([menuItemId, inventoryItemId])
+}
+
+model StockMovement {
+  id              String        @id @default(cuid())
+  locationId      String
+  inventoryItemId String
+  type            StockMoveType
+  quantity        Float
+  costPerUnit     Float?
+  notes           String?
+  reference       String?
+  createdBy       String?
+  createdAt       DateTime      @default(now())
+
+  location      Location      @relation(fields: [locationId], references: [id])
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+enum StockMoveType {
+  PURCHASE
+  SALE
+  WASTE
+  ADJUSTMENT
+  TRANSFER
+  RETURN
+}
+
+// ─── SUPPLIERS & PURCHASE ORDERS ─────────────────────────────────────────────
+
+model Supplier {
+  id           String   @id @default(cuid())
+  locationId   String
+  name         String
+  contactName  String?
+  email        String?
+  phone        String?
+  address      String?
+  taxId        String?
+  paymentTerms Int?
+  isActive     Boolean  @default(true)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  location       Location        @relation(fields: [locationId], references: [id])
+  inventoryItems InventoryItem[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  id          String              @id @default(cuid())
+  supplierId  String
+  orderNumber String
+  status      PurchaseOrderStatus @default(DRAFT)
+  totalAmount Float               @default(0)
+  notes       String?
+  orderedAt   DateTime?
+  expectedAt  DateTime?
+  receivedAt  DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  items    PurchaseOrderItem[]
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  PARTIAL
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrderItem {
+  id              String @id @default(cuid())
+  purchaseOrderId String
+  inventoryItemId String
+  quantity        Float
+  unitCost        Float
+  receivedQty     Float  @default(0)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+// ─── STAFF & SCHEDULING ──────────────────────────────────────────────────────
+
+model Shift {
+  id         String      @id @default(cuid())
+  locationId String
+  staffId    String
+  date       DateTime
+  startTime  String
+  endTime    String
+  breakTime  Int         @default(0)
+  status     ShiftStatus @default(SCHEDULED)
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  location    Location     @relation(fields: [locationId], references: [id])
+  clockEvents ClockEvent[]
+}
+
+enum ShiftStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  ABSENT
+  CANCELLED
+}
+
+model ClockEvent {
+  id      String         @id @default(cuid())
+  shiftId String?
+  userId  String
+  type    ClockEventType
+  time    DateTime       @default(now())
+  notes   String?
+
+  shift Shift? @relation(fields: [shiftId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+}
+
+enum ClockEventType {
+  CLOCK_IN
+  CLOCK_OUT
+  BREAK_START
+  BREAK_END
+}
+
+// ─── EXPENSES ────────────────────────────────────────────────────────────────
+
+model Expense {
+  id          String   @id @default(cuid())
+  locationId  String
+  category    String
+  description String
+  amount      Float
+  date        DateTime
+  receipt     String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id])
+}
+
+// ─── PROMOTIONS ──────────────────────────────────────────────────────────────
+
+model Promotion {
+  id             String        @id @default(cuid())
+  organizationId String
+  name           String
+  type           PromotionType
+  value          Float
+  minOrderAmount Float?
+  maxUses        Int?
+  usedCount      Int           @default(0)
+  code           String?       @unique
+  startsAt       DateTime
+  endsAt         DateTime?
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  giftCards    GiftCard[]
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_X_GET_Y
+  FREE_ITEM
+  GIFT_CARD
+}
+
+model GiftCard {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  promotionId    String?
+  balance        Float
+  initialBalance Float
+  isActive       Boolean   @default(true)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  promotion Promotion? @relation(fields: [promotionId], references: [id])
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+
+model Notification {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  title          String
+  body           String
+  type           String
+  isRead         Boolean  @default(false)
+  data           Json?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── AUDIT LOG ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  action         String
+  entity         String
+  entityId       String?
+  oldData        Json?
+  newData        Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+}

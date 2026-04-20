@@ -1,0 +1,210 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check, Loader2, Zap, Building2, Rocket, ExternalLink, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const PLANS = [
+  {
+    id: "STARTER",
+    name: "Starter",
+    price: "Ücretsiz",
+    icon: Zap,
+    color: "text-slate-600",
+    bg: "bg-slate-50",
+    border: "border-slate-200",
+    features: ["10 masa", "2 kullanıcı", "1 şube", "Temel raporlar"],
+  },
+  {
+    id: "PROFESSIONAL",
+    name: "Professional",
+    price: "₺999/ay",
+    icon: Rocket,
+    color: "text-primary",
+    bg: "bg-primary/5",
+    border: "border-primary/30",
+    badge: "En Popüler",
+    features: ["50 masa", "10 kullanıcı", "3 şube", "Gelişmiş raporlar", "Online sipariş", "E-posta bildirimleri"],
+  },
+  {
+    id: "ENTERPRISE",
+    name: "Enterprise",
+    price: "₺2.499/ay",
+    icon: Building2,
+    color: "text-violet-600",
+    bg: "bg-violet-50",
+    border: "border-violet-200",
+    features: ["Sınırsız masa", "Sınırsız kullanıcı", "Sınırsız şube", "Öncelikli destek", "Özel entegrasyonlar"],
+  },
+];
+
+interface Props {
+  plan: string;
+  status: string;
+  trialDaysLeft: number | null;
+  periodEnd: string | null;
+  hasStripeSubscription: boolean;
+}
+
+export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasStripeSubscription }: Props) {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function handleUpgrade(targetPlan: "PROFESSIONAL" | "ENTERPRISE") {
+    setLoading(targetPlan);
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: targetPlan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.success) {
+        toast.success("Plan güncellendi");
+        window.location.reload();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      toast.error("İşlem başarısız");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handlePortal() {
+    setLoading("portal");
+    try {
+      const res = await fetch("/api/billing/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else throw new Error();
+    } catch {
+      toast.error("Fatura portalı açılamadı");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  const statusLabel: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+    TRIALING: { label: "Deneme", variant: "secondary" },
+    ACTIVE: { label: "Aktif", variant: "default" },
+    PAST_DUE: { label: "Ödeme Bekliyor", variant: "destructive" },
+    CANCELED: { label: "İptal Edildi", variant: "destructive" },
+  };
+
+  const currentStatus = statusLabel[status] ?? { label: status, variant: "secondary" as const };
+
+  return (
+    <div className="max-w-4xl space-y-6">
+      {/* Current plan summary */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Mevcut Plan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="text-2xl font-bold">{plan}</div>
+              <Badge variant={currentStatus.variant}>{currentStatus.label}</Badge>
+              {trialDaysLeft !== null && trialDaysLeft <= 7 && (
+                <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-3 py-1 rounded-lg text-sm">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {trialDaysLeft} gün kaldı
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {hasStripeSubscription && (
+                <Button variant="outline" size="sm" onClick={handlePortal} disabled={loading === "portal"}>
+                  {loading === "portal" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
+                  <span className="ml-1.5">Fatura Yönetimi</span>
+                </Button>
+              )}
+            </div>
+          </div>
+          {periodEnd && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {status === "TRIALING" ? "Deneme süresi" : "Dönem"} bitiş:{" "}
+              {new Date(periodEnd).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Plan cards */}
+      <div className="grid grid-cols-3 gap-4">
+        {PLANS.map((p) => {
+          const isCurrent = plan === p.id;
+          const Icon = p.icon;
+          return (
+            <div
+              key={p.id}
+              className={cn(
+                "rounded-2xl border-2 p-6 relative transition-all",
+                isCurrent ? "border-primary shadow-md" : p.border,
+                p.bg
+              )}
+            >
+              {p.badge && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                    {p.badge}
+                  </span>
+                </div>
+              )}
+              {isCurrent && (
+                <div className="absolute -top-3 right-4">
+                  <span className="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                    Mevcut
+                  </span>
+                </div>
+              )}
+
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-4", p.bg, "border", p.border)}>
+                <Icon className={cn("w-5 h-5", p.color)} />
+              </div>
+              <h3 className="font-bold text-lg">{p.name}</h3>
+              <p className={cn("text-2xl font-bold mt-1 mb-4", p.color)}>{p.price}</p>
+
+              <ul className="space-y-2 mb-6">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm">
+                    <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              {isCurrent ? (
+                <Button variant="outline" className="w-full" disabled>
+                  Mevcut Plan
+                </Button>
+              ) : p.id === "STARTER" ? (
+                <Button variant="outline" className="w-full" disabled>
+                  Ücretsiz
+                </Button>
+              ) : (
+                <Button
+                  className="w-full"
+                  onClick={() => handleUpgrade(p.id as "PROFESSIONAL" | "ENTERPRISE")}
+                  disabled={!!loading}
+                >
+                  {loading === p.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : null}
+                  {plan === "STARTER" || status === "TRIALING" ? "Yükselt" : "Geçiş Yap"}
+                </Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
