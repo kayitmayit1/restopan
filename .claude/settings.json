@@ -9,7 +9,10 @@
       "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(p.dependencies?.next || p.devDependencies?.next\\)\")",
       "Bash(psql postgresql://postgres:password@localhost:5432/restoran -c \"SELECT 1\")",
       "Bash(node -e \"const s = require\\('stripe'\\); console.log\\(require\\('./node_modules/stripe/package.json'\\).version\\)\")",
-      "Bash(xargs sed *)"
+      "Bash(xargs sed *)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); console.log\\('DB:', process.env.DATABASE_URL ? process.env.DATABASE_URL.substring\\(0,50\\)+'...' : 'YOK'\\)\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); const u = process.env.DATABASE_URL || ''; console.log\\('port:', u.match\\(/:\\(\\\\d+\\)\\\\//\\)?.[1] || 'bulunamadı'\\); console.log\\('host:', u.match\\(/@\\([^:\\\\/]+\\)/\\)?.[1] || 'bulunamadı'\\)\")",
+      "Bash(git init *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar"
