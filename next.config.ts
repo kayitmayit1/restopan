@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
+  experimental: {
+    turbo: {},
+  },
 };
 
 export default withPWA({
