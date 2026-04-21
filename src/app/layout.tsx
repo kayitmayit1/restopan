@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,8 +17,15 @@ export const metadata: Metadata = {
   description:
     "Restoranınızı tek bir platformdan yönetin. POS, masa, mutfak, stok, personel ve daha fazlası.",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "RestoPan",
+  },
+};
+
+export const viewport: Viewport = {
   themeColor: "#0a0a0a",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "RestoPan" },
 };
 
 export default function RootLayout({
