@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     role: data.role,
     inviteUrl: `${appUrl}/davet?token=${invite.token}`,
     invitedBy: session.user.name ?? "Yönetici",
-  }).catch(() => {});
+  }).catch((e) => console.error("[INVITE_EMAIL]", e));
 
   return NextResponse.json({ success: true, token: invite.token });
 }

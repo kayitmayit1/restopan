@@ -44,28 +44,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
+      }
+      // Load membership on sign-in or explicit update
+      if (token.id && (user || trigger === "update" || !token.organizationId)) {
+        const membership = await db.organizationMember.findFirst({
+          where: { userId: token.id as string },
+          include: { organization: true },
+          orderBy: { createdAt: "asc" },
+        });
+        if (membership) {
+          token.organizationId = membership.organizationId;
+          token.organizationSlug = membership.organization.slug;
+          token.role = membership.role;
+          token.locationId = membership.locationId ?? undefined;
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (token?.id) {
         session.user.id = token.id as string;
-
-        const membership = await db.organizationMember.findFirst({
-          where: { userId: token.id as string },
-          include: { organization: true },
-          orderBy: { createdAt: "asc" },
-        });
-
-        if (membership) {
-          session.user.organizationId = membership.organizationId;
-          session.user.organizationSlug = membership.organization.slug;
-          session.user.role = membership.role;
-          session.user.locationId = membership.locationId ?? undefined;
-        }
+        session.user.organizationId = token.organizationId as string | undefined;
+        session.user.organizationSlug = token.organizationSlug as string | undefined;
+        session.user.role = token.role as string | undefined;
+        session.user.locationId = token.locationId as string | undefined;
       }
       return session;
     },
