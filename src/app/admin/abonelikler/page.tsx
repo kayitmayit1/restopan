@@ -48,7 +48,7 @@ export default async function AdminSubscriptionsPage() {
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Durum</th>
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Dönem Başlangıç</th>
                 <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Dönem Bitiş</th>
-                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">Stripe</th>
+                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-medium">iyzico</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -80,7 +80,7 @@ export default async function AdminSubscriptionsPage() {
                       {sub.currentPeriodEnd.toLocaleDateString("tr-TR")}
                     </td>
                     <td className="px-5 py-3.5 text-xs text-muted-foreground font-mono">
-                      {sub.stripeSubId ? sub.stripeSubId.slice(0, 16) + "…" : "—"}
+                      {sub.iyzicoSubId ? sub.iyzicoSubId.slice(0, 16) + "…" : "—"}
                     </td>
                   </tr>
                 );

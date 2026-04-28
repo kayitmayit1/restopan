@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { stripe, PLANS } from "@/lib/stripe";
+import { upgradeSubscription, PLANS, type PaidPlan } from "@/lib/iyzico";
 import { z } from "zod";
 
 const schema = z.object({
@@ -15,55 +15,39 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { plan } = schema.parse(body);
+  const { plan } = schema.parse(body) as { plan: PaidPlan };
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   const org = await db.organization.findUnique({
     where: { id: session.user.organizationId },
     include: { subscriptions: { orderBy: { createdAt: "desc" }, take: 1 } },
   });
-
   if (!org) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const planConfig = PLANS[plan];
-  const stripeSubId = org.subscriptions[0]?.stripeSubId;
+  const existingSub = org.subscriptions[0];
 
-  // If existing Stripe subscription, update it
-  if (stripeSubId) {
-    const sub = await stripe.subscriptions.retrieve(stripeSubId);
-    await stripe.subscriptions.update(stripeSubId, {
-      items: [{ id: sub.items.data[0].id, price: planConfig.priceId }],
-      proration_behavior: "always_invoice",
-    });
-    return NextResponse.json({ success: true });
+  // Active iyzico subscription → upgrade plan
+  if (existingSub?.iyzicoSubId && existingSub.status === "ACTIVE") {
+    try {
+      await upgradeSubscription({
+        subscriptionReferenceCode: existingSub.iyzicoSubId,
+        newPricingPlanReferenceCode: PLANS[plan].planCode,
+        upgradePeriod: "NOW",
+      });
+      await db.subscription.update({
+        where: { id: existingSub.id },
+        data: { iyzicoPlanCode: PLANS[plan].planCode },
+      });
+      await db.organization.update({ where: { id: org.id }, data: { plan } });
+      return NextResponse.json({ success: true });
+    } catch (err) {
+      console.error("[billing/checkout upgrade]", err);
+      return NextResponse.json({ error: "Upgrade failed" }, { status: 500 });
+    }
   }
 
-  // New checkout session
-  let customerId: string | undefined;
-  const existingCustomers = await stripe.customers.list({ email: session.user.email!, limit: 1 });
-  if (existingCustomers.data.length > 0) {
-    customerId = existingCustomers.data[0].id;
-  } else {
-    const customer = await stripe.customers.create({
-      email: session.user.email!,
-      name: org.name,
-      metadata: { organizationId: org.id },
-    });
-    customerId = customer.id;
-  }
-
-  const checkoutSession = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [{ price: planConfig.priceId, quantity: 1 }],
-    success_url: `${appUrl}/dashboard/ayarlar/fatura?success=1`,
-    cancel_url: `${appUrl}/dashboard/ayarlar/fatura?canceled=1`,
-    metadata: { organizationId: org.id, plan },
-    subscription_data: {
-      metadata: { organizationId: org.id, plan },
-    },
+  // New subscription → redirect to iyzico checkout form page
+  return NextResponse.json({
+    url: `${appUrl}/api/billing/checkout-form?plan=${plan}`,
   });
-
-  return NextResponse.json({ url: checkoutSession.url });
 }

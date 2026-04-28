@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Loader2, Zap, Building2, Rocket, ExternalLink, AlertTriangle } from "lucide-react";
+import { Check, Loader2, Zap, Building2, Rocket, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -47,10 +47,10 @@ interface Props {
   status: string;
   trialDaysLeft: number | null;
   periodEnd: string | null;
-  hasStripeSubscription: boolean;
+  hasIyzicoSubscription: boolean;
 }
 
-export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasStripeSubscription }: Props) {
+export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzicoSubscription }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleUpgrade(targetPlan: "PROFESSIONAL" | "ENTERPRISE") {
@@ -72,20 +72,6 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasStrip
       }
     } catch {
       toast.error("İşlem başarısız");
-    } finally {
-      setLoading(null);
-    }
-  }
-
-  async function handlePortal() {
-    setLoading("portal");
-    try {
-      const res = await fetch("/api/billing/portal", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else throw new Error();
-    } catch {
-      toast.error("Fatura portalı açılamadı");
     } finally {
       setLoading(null);
     }
@@ -119,14 +105,12 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasStrip
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
-              {hasStripeSubscription && (
-                <Button variant="outline" size="sm" onClick={handlePortal} disabled={loading === "portal"}>
-                  {loading === "portal" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
-                  <span className="ml-1.5">Fatura Yönetimi</span>
-                </Button>
-              )}
-            </div>
+            {hasIyzicoSubscription && status === "PAST_DUE" && (
+              <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                <AlertTriangle className="w-4 h-4" />
+                Ödeme sorunu için destek ile iletişime geçin
+              </div>
+            )}
           </div>
           {periodEnd && (
             <p className="text-xs text-muted-foreground mt-2">

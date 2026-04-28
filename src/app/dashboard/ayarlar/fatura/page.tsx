@@ -31,7 +31,7 @@ export default async function FaturaPage() {
           status={sub?.status ?? "TRIALING"}
           trialDaysLeft={trialDaysLeft}
           periodEnd={sub?.currentPeriodEnd?.toISOString() ?? null}
-          hasStripeSubscription={!!sub?.stripeSubId}
+          hasIyzicoSubscription={!!sub?.iyzicoSubId}
         />
       </div>
     </div>

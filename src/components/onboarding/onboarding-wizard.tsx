@@ -22,7 +22,6 @@ const BUSINESS_TYPES = [
   { id: "restoran", emoji: "🍽️", label: "Restoran" },
   { id: "kafe", emoji: "☕", label: "Kafe" },
   { id: "fastfood", emoji: "🍔", label: "Fast Food" },
-  { id: "bar", emoji: "🍺", label: "Bar / Pub" },
   { id: "pastane", emoji: "🥐", label: "Pastane" },
   { id: "diger", emoji: "🏪", label: "Diğer" },
 ];

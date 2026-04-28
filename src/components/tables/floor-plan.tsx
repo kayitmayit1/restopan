@@ -174,6 +174,12 @@ export function TableFloorPlan({
               <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                 {tables
                   .filter((t) => (t.section || "Genel") === section && t.isActive)
+                  .sort((a, b) => {
+                    const na = parseInt(a.name, 10);
+                    const nb = parseInt(b.name, 10);
+                    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+                    return a.name.localeCompare(b.name, "tr");
+                  })
                   .map((table) => {
                     const cfg = statusConfig[table.status];
                     const isSelected = selectedTable?.id === table.id;

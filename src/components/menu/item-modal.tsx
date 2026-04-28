@@ -70,8 +70,12 @@ export function ItemModal({
     taxRate: "",
   });
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent | React.MouseEvent) {
     e.preventDefault();
+    if (!form.name.trim()) {
+      toast.error("Ürün adı zorunludur");
+      return;
+    }
     if (!form.price) {
       toast.error("Fiyat zorunludur");
       return;
@@ -85,20 +89,28 @@ export function ItemModal({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
           organizationId,
           categoryId: selectedCatId,
+          name: form.name.trim(),
+          description: form.description || undefined,
           price: parseFloat(form.price),
           cost: form.cost ? parseFloat(form.cost) : null,
+          taxRate: form.taxRate ? parseFloat(form.taxRate) : null,
+          isActive: form.isActive,
+          isAvailable: form.isAvailable,
+          isFeatured: form.isFeatured,
         }),
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error((json as { error?: string }).error ?? "Sunucu hatası");
+      }
       const data = await res.json();
       toast.success(item ? "Ürün güncellendi" : "Ürün eklendi");
       onSaved(data, selectedCatId);
-    } catch {
-      toast.error("İşlem başarısız");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
     } finally {
       setLoading(false);
     }
@@ -117,8 +129,10 @@ export function ItemModal({
           <div className="space-y-2">
             <Label>Kategori</Label>
             <Select value={selectedCatId} onValueChange={(v) => v !== null && setSelectedCatId(v)}>
-              <SelectTrigger>
-                <SelectValue />
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {categories.find((c) => c.id === selectedCatId)?.name ?? "Kategori seçin"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (

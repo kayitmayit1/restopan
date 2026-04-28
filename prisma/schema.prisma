@@ -48,8 +48,8 @@ enum PlanType {
 model Subscription {
   id                 String             @id @default(cuid())
   organizationId     String
-  stripeSubId        String?            @unique
-  stripePriceId      String?
+  iyzicoSubId        String?            @unique
+  iyzicoPlanCode     String?
   status             SubscriptionStatus @default(ACTIVE)
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime

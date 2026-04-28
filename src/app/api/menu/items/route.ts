@@ -23,8 +23,16 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json();
-  const data = schema.parse(body);
-  const item = await db.menuItem.create({ data });
-  return NextResponse.json(item, { status: 201 });
+  try {
+    const body = await req.json();
+    const data = schema.parse(body);
+    const item = await db.menuItem.create({ data });
+    return NextResponse.json(item, { status: 201 });
+  } catch (err) {
+    console.error("[menu/items POST]", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Internal error" },
+      { status: 500 }
+    );
+  }
 }

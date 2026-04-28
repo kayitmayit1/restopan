@@ -1,105 +1,110 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
-import Stripe from "stripe";
+import { PLANS } from "@/lib/iyzico";
+
+// iyzico sends webhook events as JSON POST requests
+// Event types: subscription.order.success, subscription.order.failure,
+//              subscription.canceled, subscription.upgraded, subscription.activated
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const sig = req.headers.get("stripe-signature");
-
-  if (!sig) return NextResponse.json({ error: "No signature" }, { status: 400 });
-
-  let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
-  } catch {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    const body = await req.json() as Record<string, unknown>;
+    const eventType = body.eventType as string | undefined;
+    const data = body.data as Record<string, unknown> | undefined;
+
+    if (!eventType || !data) {
+      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
+
+    const subRefCode = data.referenceCode as string | undefined;
+    const planCode = data.pricingPlanReferenceCode as string | undefined;
+
+    switch (eventType) {
+      case "subscription.order.success": {
+        if (!subRefCode) break;
+        const plan =
+          planCode === PLANS.PROFESSIONAL.planCode
+            ? "PROFESSIONAL"
+            : planCode === PLANS.ENTERPRISE.planCode
+            ? "ENTERPRISE"
+            : "PROFESSIONAL";
+
+        const startDate = data.startDate ? new Date(data.startDate as string) : new Date();
+        const endDate = data.endDate
+          ? new Date(data.endDate as string)
+          : new Date(Date.now() + 30 * 86400000);
+
+        const sub = await db.subscription.findFirst({
+          where: { iyzicoSubId: subRefCode },
+        });
+        if (sub) {
+          await db.subscription.update({
+            where: { id: sub.id },
+            data: { status: "ACTIVE", currentPeriodStart: startDate, currentPeriodEnd: endDate },
+          });
+          await db.organization.update({
+            where: { id: sub.organizationId },
+            data: { plan },
+          });
+        }
+        break;
+      }
+
+      case "subscription.order.failure": {
+        if (!subRefCode) break;
+        await db.subscription.updateMany({
+          where: { iyzicoSubId: subRefCode },
+          data: { status: "PAST_DUE" },
+        });
+        break;
+      }
+
+      case "subscription.canceled": {
+        if (!subRefCode) break;
+        const sub = await db.subscription.findFirst({
+          where: { iyzicoSubId: subRefCode },
+        });
+        if (sub) {
+          await db.subscription.update({
+            where: { id: sub.id },
+            data: { status: "CANCELED" },
+          });
+          await db.organization.update({
+            where: { id: sub.organizationId },
+            data: { plan: "STARTER" },
+          });
+        }
+        break;
+      }
+
+      case "subscription.upgraded": {
+        if (!subRefCode || !planCode) break;
+        const plan =
+          planCode === PLANS.PROFESSIONAL.planCode
+            ? "PROFESSIONAL"
+            : planCode === PLANS.ENTERPRISE.planCode
+            ? "ENTERPRISE"
+            : "PROFESSIONAL";
+        const sub = await db.subscription.findFirst({
+          where: { iyzicoSubId: subRefCode },
+        });
+        if (sub) {
+          await db.subscription.update({
+            where: { id: sub.id },
+            data: { iyzicoPlanCode: planCode },
+          });
+          await db.organization.update({
+            where: { id: sub.organizationId },
+            data: { plan },
+          });
+        }
+        break;
+      }
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (err) {
+    console.error("[billing/webhook]", err);
+    return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
-
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const cs = event.data.object as Stripe.Checkout.Session;
-      if (cs.mode !== "subscription") break;
-      const orgId = cs.metadata?.organizationId;
-      const plan = (cs.metadata?.plan ?? "PROFESSIONAL") as "PROFESSIONAL" | "ENTERPRISE";
-      if (!orgId || typeof cs.subscription !== "string") break;
-
-      const sub = await stripe.subscriptions.retrieve(cs.subscription);
-      await upsertSubscription(orgId, sub, plan);
-      await db.organization.update({ where: { id: orgId }, data: { plan } });
-      break;
-    }
-
-    case "customer.subscription.updated": {
-      const sub = event.data.object as Stripe.Subscription;
-      const orgId = sub.metadata?.organizationId;
-      if (!orgId) break;
-      const plan = (sub.metadata?.plan ?? "PROFESSIONAL") as "PROFESSIONAL" | "ENTERPRISE";
-      await upsertSubscription(orgId, sub, plan);
-      break;
-    }
-
-    case "customer.subscription.deleted": {
-      const sub = event.data.object as Stripe.Subscription;
-      const orgId = sub.metadata?.organizationId;
-      if (!orgId) break;
-      await db.subscription.updateMany({
-        where: { stripeSubId: sub.id },
-        data: { status: "CANCELED" },
-      });
-      await db.organization.update({ where: { id: orgId }, data: { plan: "STARTER" } });
-      break;
-    }
-
-    case "invoice.payment_failed": {
-      const inv = event.data.object as unknown as { subscription?: string | { id: string } };
-      const subId = typeof inv.subscription === "string" ? inv.subscription : inv.subscription?.id;
-      if (!subId) break;
-      await db.subscription.updateMany({
-        where: { stripeSubId: subId },
-        data: { status: "PAST_DUE" },
-      });
-      break;
-    }
-  }
-
-  return NextResponse.json({ received: true });
-}
-
-async function upsertSubscription(
-  orgId: string,
-  sub: Stripe.Subscription,
-  plan: "PROFESSIONAL" | "ENTERPRISE"
-) {
-  const status =
-    sub.status === "trialing" ? "TRIALING" :
-    sub.status === "active" ? "ACTIVE" :
-    sub.status === "past_due" ? "PAST_DUE" : "CANCELED";
-
-  const item = sub.items.data[0];
-  const periodStart = new Date((item?.billing_thresholds as unknown as { current_period_start?: number })?.current_period_start ?? Date.now());
-  const periodEnd = new Date((item?.billing_thresholds as unknown as { current_period_end?: number })?.current_period_end ?? Date.now() + 30 * 86400000);
-
-  // Use subscription-level billing cycle from Stripe's response
-  const subAny = sub as unknown as { current_period_start: number; current_period_end: number };
-
-  await db.subscription.upsert({
-    where: { stripeSubId: sub.id },
-    create: {
-      organizationId: orgId,
-      stripeSubId: sub.id,
-      stripePriceId: item?.price.id,
-      status,
-      currentPeriodStart: new Date(subAny.current_period_start * 1000),
-      currentPeriodEnd: new Date(subAny.current_period_end * 1000),
-    },
-    update: {
-      status,
-      stripePriceId: item?.price.id,
-      currentPeriodStart: new Date(subAny.current_period_start * 1000),
-      currentPeriodEnd: new Date(subAny.current_period_end * 1000),
-    },
-  });
-
-  void plan;
 }

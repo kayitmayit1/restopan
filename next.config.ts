@@ -6,6 +6,7 @@ const baseConfig: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
   turbopack: {},
+  serverExternalPackages: ["iyzipay"],
 };
 
 const isDev = process.env.NODE_ENV === "development";

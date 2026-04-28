@@ -47,20 +47,6 @@ export function SubscriptionGate({ reason }: Props) {
     }
   }
 
-  async function handlePortal() {
-    setLoading("portal");
-    try {
-      const res = await fetch("/api/billing/portal", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else throw new Error();
-    } catch {
-      toast.error("Portal açılamadı");
-    } finally {
-      setLoading(null);
-    }
-  }
-
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-6">
@@ -122,10 +108,9 @@ export function SubscriptionGate({ reason }: Props) {
         </div>
 
         {reason === "past_due" && (
-          <Button variant="link" size="sm" onClick={handlePortal} disabled={!!loading} className="text-muted-foreground">
-            {loading === "portal" ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
-            Ödeme bilgilerini güncelle
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            Ödeme sorunu için <a href="mailto:destek@restopan.com" className="underline">destek@restopan.com</a> ile iletişime geçin.
+          </p>
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Building2, MapPin, Globe, Bell, Shield, Plus, Loader2 } from "lucide-react";
+import { Building2, MapPin, Globe, Bell, Plus, Loader2, Sun, Moon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface Organization {
@@ -28,6 +30,7 @@ interface SettingsClientProps { organization: Organization; locations: Location[
 
 export function SettingsClient({ organization: initialOrg, locations: initialLocations }: SettingsClientProps) {
   const [org, setOrg] = useState(initialOrg);
+  const { theme, setTheme } = useTheme();
   const [locations, setLocations] = useState(initialLocations);
   const [saving, setSaving] = useState(false);
   const [showAddLocation, setShowAddLocation] = useState(false);
@@ -184,7 +187,39 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
           </div>
         </TabsContent>
 
-        <TabsContent value="preferences" className="mt-4">
+        <TabsContent value="preferences" className="mt-4 space-y-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader><CardTitle className="text-base">Görünüm</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Tema</Label>
+                  <p className="text-xs text-muted-foreground">Arayüz renk teması</p>
+                </div>
+                <div className="flex gap-2">
+                  {[
+                    { value: "light", icon: Sun, label: "Açık" },
+                    { value: "dark", icon: Moon, label: "Koyu" },
+                  ].map((t) => (
+                    <button
+                      key={t.value}
+                      onClick={() => setTheme(t.value)}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all",
+                        theme === t.value
+                          ? "bg-primary text-white border-primary"
+                          : "hover:bg-muted"
+                      )}
+                    >
+                      <t.icon className="w-4 h-4" />
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-0 shadow-sm">
             <CardHeader><CardTitle className="text-base">Para & Dil</CardTitle></CardHeader>
             <CardContent className="space-y-4">

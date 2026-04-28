@@ -15,7 +15,13 @@
       "Bash(git init *)",
       "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); console.log\\('AUTH_SECRET:', process.env.AUTH_SECRET ? 'VAR \\(' + process.env.AUTH_SECRET.length + ' karakter\\)' : 'YOK'\\)\")",
       "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); console.log\\('GOOGLE_ID:', process.env.GOOGLE_CLIENT_ID ? 'VAR' : 'YOK'\\); console.log\\('NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'YOK'\\)\")",
-      "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); console.log\\('RESEND:', process.env.RESEND_API_KEY ? 'VAR' : 'YOK'\\); console.log\\('APP_URL:', process.env.NEXT_PUBLIC_APP_URL || 'YOK'\\)\")"
+      "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); console.log\\('RESEND:', process.env.RESEND_API_KEY ? 'VAR' : 'YOK'\\); console.log\\('APP_URL:', process.env.NEXT_PUBLIC_APP_URL || 'YOK'\\)\")",
+      "Bash(node -e \"const pkg = require\\('./node_modules/@base-ui-components/react/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(node -e \"const pkg = require\\('./node_modules/@base-ui/react/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/menu/items -H 'Content-Type: application/json' -d '{\"organizationId\":\"test\",\"categoryId\":\"test\",\"name\":\"Test\",\"price\":10,\"isActive\":true,\"isAvailable\":true,\"isFeatured\":false}')",
+      "Bash(curl -s -X POST http://localhost:3001/api/menu/items -H 'Content-Type: application/json' -d '{\"organizationId\":\"test\",\"categoryId\":\"test\",\"name\":\"Test\",\"price\":10,\"isActive\":true,\"isAvailable\":true,\"isFeatured\":false}')",
+      "Bash(curl -s http://localhost:3000/api/menu/items -X POST -H \"Content-Type: application/json\" -d '{\"name\":\"test\",\"price\":10,\"organizationId\":\"x\",\"categoryId\":\"y\",\"isActive\":true,\"isAvailable\":true,\"isFeatured\":false}')",
+      "Bash(npm uninstall *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar"

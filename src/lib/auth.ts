@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { db } from "@/lib/db";
+import type { MemberRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -69,7 +70,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.organizationId = token.organizationId as string | undefined;
         session.user.organizationSlug = token.organizationSlug as string | undefined;
-        session.user.role = token.role as string | undefined;
+        session.user.role = token.role as MemberRole | undefined;
         session.user.locationId = token.locationId as string | undefined;
       }
       return session;
