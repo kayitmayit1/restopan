@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Loader2, Zap, Building2, Rocket, AlertTriangle } from "lucide-react";
+import { Check, Loader2, Zap, Building2, Rocket, AlertTriangle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +23,7 @@ const PLANS = [
   {
     id: "PROFESSIONAL",
     name: "Professional",
-    price: "₺999/ay",
+    price: "₺799/ay",
     icon: Rocket,
     color: "text-primary",
     bg: "bg-primary/5",
@@ -33,7 +34,7 @@ const PLANS = [
   {
     id: "ENTERPRISE",
     name: "Enterprise",
-    price: "₺2.499/ay",
+    price: "Size özel",
     icon: Building2,
     color: "text-violet-600",
     bg: "bg-violet-50",
@@ -52,8 +53,30 @@ interface Props {
 
 export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzicoSubscription }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const error = searchParams.get("error");
+    if (success === "1") {
+      toast.success("Ödeme başarılı! Planınız güncellendi.");
+      router.replace("/dashboard/ayarlar/fatura");
+    } else if (error === "payment_failed") {
+      toast.error("Ödeme başarısız. Lütfen tekrar deneyin.");
+      router.replace("/dashboard/ayarlar/fatura");
+    } else if (error === "1") {
+      toast.error("Bir hata oluştu. Lütfen destek ile iletişime geçin.");
+      router.replace("/dashboard/ayarlar/fatura");
+    }
+  }, [searchParams, router]);
 
   async function handleUpgrade(targetPlan: "PROFESSIONAL" | "ENTERPRISE") {
+    if (targetPlan === "ENTERPRISE") {
+      window.location.href = "mailto:satis@restopan.com?subject=Enterprise Plan Talebi";
+      return;
+    }
     setLoading(targetPlan);
     try {
       const res = await fetch("/api/billing/checkout", {
@@ -71,9 +94,32 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
         throw new Error();
       }
     } catch {
-      toast.error("İşlem başarısız");
+      toast.error("İşlem başarısız. Lütfen tekrar deneyin.");
     } finally {
       setLoading(null);
+    }
+  }
+
+  async function handleCancel() {
+    if (!cancelConfirm) {
+      setCancelConfirm(true);
+      return;
+    }
+    setLoading("cancel");
+    try {
+      const res = await fetch("/api/billing/cancel", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Abonelik iptal edildi. Starter plana geçildi.");
+        window.location.reload();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch {
+      toast.error("İptal işlemi başarısız.");
+    } finally {
+      setLoading(null);
+      setCancelConfirm(false);
     }
   }
 
@@ -85,6 +131,7 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
   };
 
   const currentStatus = statusLabel[status] ?? { label: status, variant: "secondary" as const };
+  const canCancel = hasIyzicoSubscription && (status === "ACTIVE" || status === "PAST_DUE");
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -94,8 +141,8 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
           <CardTitle className="text-base">Mevcut Plan</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="text-2xl font-bold">{plan}</div>
               <Badge variant={currentStatus.variant}>{currentStatus.label}</Badge>
               {trialDaysLeft !== null && trialDaysLeft <= 7 && (
@@ -105,6 +152,37 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
                 </div>
               )}
             </div>
+            {canCancel && (
+              <div className="flex items-center gap-2">
+                {cancelConfirm ? (
+                  <>
+                    <span className="text-xs text-destructive">Emin misiniz?</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleCancel}
+                      disabled={loading === "cancel"}
+                    >
+                      {loading === "cancel" ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                      Evet, İptal Et
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setCancelConfirm(false)}>
+                      Vazgeç
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={handleCancel}
+                  >
+                    <XCircle className="w-3.5 h-3.5 mr-1" />
+                    Aboneliği İptal Et
+                  </Button>
+                )}
+              </div>
+            )}
             {hasIyzicoSubscription && status === "PAST_DUE" && (
               <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
                 <AlertTriangle className="w-4 h-4" />
@@ -173,10 +251,18 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
                 <Button variant="outline" className="w-full" disabled>
                   Ücretsiz
                 </Button>
+              ) : p.id === "ENTERPRISE" ? (
+                <Button
+                  variant="outline"
+                  className="w-full border-violet-200 text-violet-700 hover:bg-violet-50"
+                  onClick={() => handleUpgrade("ENTERPRISE")}
+                >
+                  Teklif Alın
+                </Button>
               ) : (
                 <Button
                   className="w-full"
-                  onClick={() => handleUpgrade(p.id as "PROFESSIONAL" | "ENTERPRISE")}
+                  onClick={() => handleUpgrade(p.id as "PROFESSIONAL")}
                   disabled={!!loading}
                 >
                   {loading === p.id ? (

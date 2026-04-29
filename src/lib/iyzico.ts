@@ -8,10 +8,7 @@ function getClient() {
     _client = new Iyzipay({
       apiKey: process.env.IYZICO_API_KEY!,
       secretKey: process.env.IYZICO_SECRET_KEY!,
-      uri:
-        process.env.NODE_ENV === "production"
-          ? "https://api.iyzipay.com"
-          : "https://sandbox.iyzipay.com",
+      uri: process.env.IYZICO_BASE_URL ?? "https://api.iyzipay.com",
     });
   }
   return _client;
@@ -27,7 +24,7 @@ export const PLANS = {
   PROFESSIONAL: {
     name: "Professional",
     planCode: process.env.IYZICO_PLAN_PROFESSIONAL ?? "",
-    price: 999,
+    price: 799,
     limits: { tables: 50, users: 10, locations: 3 },
   },
   ENTERPRISE: {
