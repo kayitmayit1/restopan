@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { checkLimit, limitError } from "@/lib/plan-limits";
+import { checkLimit, limitError } from "@/lib/plan-limits-server";
 
 export async function POST(req: NextRequest) {
   const session = await auth();

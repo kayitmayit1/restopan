@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendStaffInvite } from "@/lib/email";
 import { z } from "zod";
-import { checkLimit, limitError } from "@/lib/plan-limits";
+import { checkLimit, limitError } from "@/lib/plan-limits-server";
 
 const schema = z.object({
   organizationId: z.string(),
