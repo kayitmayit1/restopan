@@ -83,9 +83,9 @@ const PLANS = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Ahmet Kaya", role: "İşletme Sahibi · İstanbul", quote: "POS'tan mutfağa kadar her şey bağlı. Garsonlarımız artık kağıt almıyor.", stars: 5 },
-  { name: "Selin Arslan", role: "Müdür · Ankara", quote: "Stok takibi sayesinde fire %30 azaldı. Raporlar da çok net.", stars: 5 },
-  { name: "Murat Demir", role: "Kafe Sahibi · İzmir", quote: "Kurulum 15 dakika sürdü. Hazır menü şablonu işimi çok kolaylaştırdı.", stars: 5 },
+  { name: "Hilmi Kırgız", role: "İşletme Sahibi · İstanbul", quote: "POS'tan mutfağa kadar her şey bağlı, garsonlarımız artık kağıt almıyor teknolojiye adapte olduk memnunuz. ", stars: 5 },
+  { name: "Serdar Keskin", role: "Müdür · Ankara", quote: "Stok takibi sayesinde fire %30 kadar azaldı, raporlar da çok net takip etmesi kolay", stars: 5 },
+  { name: "Mevlüt Toraman", role: "Kafe Sahibi · İzmir", quote: "Kurulum kısa sürdü zaten yönlendiriyor sistem, hazır menü şablonu işimi çok kolaylaştırdı kendi ürünlerimi hazır menü şablonuna ekledim", stars: 5 },
 ];
 
 export default function LandingPage() {
