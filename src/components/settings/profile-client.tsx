@@ -102,7 +102,7 @@ export function ProfileClient({ user: initial }: Props) {
             </div>
             <div className="space-y-2">
               <Label>Telefon</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+90 5XX XXX XX XX" />
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+90 536 773 62 42" />
             </div>
             <div className="space-y-2">
               <Label>E-posta</Label>
