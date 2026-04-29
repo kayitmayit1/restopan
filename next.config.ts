@@ -6,7 +6,7 @@ const baseConfig: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
   turbopack: {},
-  serverExternalPackages: ["iyzipay"],
+  serverExternalPackages: ["iyzipay", "pg", "@prisma/adapter-pg", "@prisma/client"],
 };
 
 export default withPWA({

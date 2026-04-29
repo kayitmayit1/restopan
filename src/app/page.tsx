@@ -89,8 +89,25 @@ const TESTIMONIALS = [
 ];
 
 export default function LandingPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "RestoPAN",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web, iOS, Android",
+    description: "Türkiye'nin restoran yönetim yazılımı. POS, masa planı, mutfak ekranı, stok, personel ve QR menü.",
+    offers: [
+      { "@type": "Offer", price: "0", priceCurrency: "TRY", name: "Starter" },
+      { "@type": "Offer", price: "799", priceCurrency: "TRY", name: "Professional" },
+    ],
+    url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    inLanguage: "tr",
+    author: { "@type": "Organization", name: "RestoPAN", url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000" },
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <header className="sticky top-0 z-40 border-b bg-white/90 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -486,10 +503,12 @@ export default function LandingPage() {
       <footer className="border-t py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <RestoPanLogo iconSize={32} />
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/gizlilik" className="hover:text-foreground transition-colors">Gizlilik Politikası</Link>
+          <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+            <Link href="/hakkimizda" className="hover:text-foreground transition-colors">Hakkımızda</Link>
+            <Link href="/iletisim" className="hover:text-foreground transition-colors">İletişim</Link>
+            <Link href="/destek" className="hover:text-foreground transition-colors">Destek</Link>
+            <Link href="/gizlilik" className="hover:text-foreground transition-colors">Gizlilik</Link>
             <Link href="/kullanim-kosullari" className="hover:text-foreground transition-colors">Kullanım Koşulları</Link>
-            <a href="mailto:destek@restopan.com" className="hover:text-foreground transition-colors">Destek</a>
           </div>
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} RestoPAN. Tüm hakları saklıdır.</p>
         </div>

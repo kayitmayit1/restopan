@@ -14,9 +14,42 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "RestoPAN — Restoran Yönetim Sistemi",
+  title: {
+    default: "RestoPAN — Restoran Yönetim Sistemi",
+    template: "%s | RestoPAN",
+  },
   description:
-    "Restoranınızı tek bir platformdan yönetin. POS, masa, mutfak, stok, personel ve daha fazlası.",
+    "Türkiye'nin restoran yönetim yazılımı. POS, masa planı, mutfak ekranı (KDS), stok, personel, QR menü ve raporlar — hepsi tek platformda. 15 dakikada kurulum.",
+  keywords: [
+    "restoran yazılımı", "restoran yönetim sistemi", "pos sistemi", "kafe yazılımı",
+    "adisyon programı", "kds mutfak ekranı", "qr menü", "masa yönetimi",
+    "restoran otomasyon", "türkiye restoran pos",
+  ],
+  authors: [{ name: "RestoPAN" }],
+  creator: "RestoPAN",
+  publisher: "RestoPAN",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: "/",
+    siteName: "RestoPAN",
+    title: "RestoPAN — Restoran Yönetim Sistemi",
+    description: "POS, masa, mutfak, stok, personel ve QR menü — hepsi bir arada. Türkiye'de geliştirildi.",
+    images: [{ url: "/api/pwa/icon?size=512", width: 512, height: 512, alt: "RestoPAN" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "RestoPAN — Restoran Yönetim Sistemi",
+    description: "POS, masa, mutfak, stok, personel ve QR menü — hepsi bir arada.",
+    images: ["/api/pwa/icon?size=512"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -95,9 +95,14 @@ export default function KullanimKosullariPage() {
       </main>
 
       <footer className="border-t py-8 mt-12">
-        <div className="max-w-3xl mx-auto px-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} RestoPAN. Tüm hakları saklıdır. ·{" "}
-          <Link href="/gizlilik" className="hover:text-foreground">Gizlilik Politikası</Link>
+        <div className="max-w-3xl mx-auto px-6 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} RestoPAN. Tüm hakları saklıdır.</span>
+          <div className="flex gap-4">
+            <Link href="/hakkimizda" className="hover:text-foreground">Hakkımızda</Link>
+            <Link href="/iletisim" className="hover:text-foreground">İletişim</Link>
+            <Link href="/destek" className="hover:text-foreground">Destek</Link>
+            <Link href="/gizlilik" className="hover:text-foreground">Gizlilik</Link>
+          </div>
         </div>
       </footer>
     </div>
