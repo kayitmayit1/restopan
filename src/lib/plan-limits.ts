@@ -8,7 +8,7 @@ export const PLAN_LIMITS = {
 export const PLAN_FEATURES = {
   STARTER: [
     "pos", "tables", "kds", "orders", "menu",
-    "reservations", "staff", "inventory", "notifications", "kasa",
+    "reservations", "staff", "notifications", "kasa",
   ],
   PROFESSIONAL: [
     "pos", "tables", "kds", "orders", "menu",
