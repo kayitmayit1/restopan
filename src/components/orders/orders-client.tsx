@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { OrderStatus, PaymentStatus, OrderType } from "@prisma/client";
 import { Search, Eye, RefreshCw } from "lucide-react";
 import { OrderDetailModal } from "./order-detail-modal";
 import { useRouter } from "next/navigation";
+import { useOrderSound } from "@/hooks/use-order-sound";
 
 const statusConfig: Record<OrderStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   PENDING: { label: "Bekliyor", variant: "outline" },
@@ -50,10 +51,26 @@ interface Order {
 
 export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
   const router = useRouter();
-  const [orders] = useState(initialOrders);
+  const [orders, setOrders] = useState(initialOrders);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "ALL">("ALL");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  useOrderSound(true);
+
+  useEffect(() => {
+    const es = new EventSource("/api/events");
+    es.onmessage = (e) => {
+      try {
+        const { event, data } = JSON.parse(e.data);
+        if (event === "order:updated") {
+          setOrders((prev) => prev.map((o) => o.id === data.id ? { ...o, status: data.status as OrderStatus } : o));
+          setSelectedOrder((prev) => prev?.id === data.id && prev ? { ...prev, status: data.status as OrderStatus } : prev);
+        }
+      } catch { /* ignore parse errors */ }
+    };
+    return () => es.close();
+  }, []);
 
   const filtered = orders.filter((o) => {
     const matchesSearch =
@@ -201,6 +218,10 @@ export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
         <OrderDetailModal
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
+          onStatusChange={(id, status) => {
+            setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
+            setSelectedOrder((prev) => prev?.id === id ? { ...prev, status } : prev);
+          }}
         />
       )}
     </div>

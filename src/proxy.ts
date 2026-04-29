@@ -69,7 +69,7 @@ const handler = auth((req) => {
 
     // KITCHEN role: only mutfak + siparisler
     if (role === "KITCHEN") {
-      const allowed = ["/dashboard/mutfak", "/dashboard/siparisler", "/dashboard/bildirimler"];
+      const allowed = ["/dashboard/mutfak", "/dashboard/siparisler", "/dashboard/bildirimler", "/dashboard/ayarlar/profil"];
       const isAllowed = allowed.some((r) => pathname === r || pathname.startsWith(r + "/"));
       if (!isAllowed && pathname !== "/dashboard") {
         return NextResponse.redirect(new URL("/dashboard/mutfak", req.url));

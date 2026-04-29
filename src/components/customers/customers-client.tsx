@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatCurrency, getInitials, formatDate } from "@/lib/utils";
 import { Search, UserPlus, Star, Phone, Mail, ShoppingBag, Calendar } from "lucide-react";
 import { AddCustomerModal } from "./add-customer-modal";
+import { CustomerDetailModal } from "./customer-detail-modal";
 
 interface Customer {
   id: string;
@@ -135,6 +136,13 @@ export function CustomersClient({ customers: initialCustomers, organizationId }:
             setCustomers((prev) => [{ ...c, _count: { orders: 0, reservations: 0 } }, ...prev]);
             setShowAdd(false);
           }}
+        />
+      )}
+
+      {selected && (
+        <CustomerDetailModal
+          customer={selected}
+          onClose={() => setSelected(null)}
         />
       )}
     </div>

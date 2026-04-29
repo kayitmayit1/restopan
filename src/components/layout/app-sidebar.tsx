@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getInitials } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
 
 type Role = "OWNER" | "ADMIN" | "MANAGER" | "CASHIER" | "WAITER" | "KITCHEN" | "STAFF";
@@ -108,6 +108,14 @@ export function AppSidebar() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const role = session?.user?.role as Role | undefined;
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/notifications?unread=1")
+      .then((r) => r.json())
+      .then((data: unknown[]) => setUnreadCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => {});
+  }, []);
 
   function toggleSection(title: string) {
     setCollapsed((prev) => ({ ...prev, [title]: !prev[title] }));
@@ -159,7 +167,12 @@ export function AppSidebar() {
                       )}
                     >
                       <item.icon className="w-4 h-4 flex-shrink-0" />
-                      <span>{item.label}</span>
+                      <span className="flex-1">{item.label}</span>
+                      {item.href === "/dashboard/bildirimler" && unreadCount > 0 && (
+                        <span className="bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}

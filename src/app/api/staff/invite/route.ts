@@ -36,13 +36,21 @@ export async function POST(req: NextRequest) {
   });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  sendStaffInvite({
-    to: data.email,
-    restaurantName: organization?.name ?? "Restoran",
-    role: data.role,
-    inviteUrl: `${appUrl}/davet?token=${invite.token}`,
-    invitedBy: session.user.name ?? "Yönetici",
-  }).catch((e) => console.error("[INVITE_EMAIL]", e));
+  const inviteUrl = `${appUrl}/davet?token=${invite.token}`;
 
-  return NextResponse.json({ success: true, token: invite.token });
+  let emailSent = false;
+  try {
+    await sendStaffInvite({
+      to: data.email,
+      restaurantName: organization?.name ?? "Restoran",
+      role: data.role,
+      inviteUrl,
+      invitedBy: session.user.name ?? "Yönetici",
+    });
+    emailSent = true;
+  } catch (e) {
+    console.error("[INVITE_EMAIL]", e);
+  }
+
+  return NextResponse.json({ success: true, token: invite.token, inviteUrl, emailSent });
 }

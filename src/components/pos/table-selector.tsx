@@ -55,6 +55,10 @@ export function TableSelector({
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                 {tables
                   .filter((t) => (t.section || "Genel") === section)
+                  .sort((a, b) => {
+                    const na = parseInt(a.name, 10), nb = parseInt(b.name, 10);
+                    return !isNaN(na) && !isNaN(nb) ? na - nb : a.name.localeCompare(b.name, "tr");
+                  })
                   .map((table) => {
                     const cfg = statusConfig[table.status];
                     const isSelected = table.id === selectedId;

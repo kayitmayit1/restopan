@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface CartModifier {
   modifierId: string;
@@ -44,81 +45,97 @@ interface POSState {
   total: () => number;
 }
 
-export const usePOSStore = create<POSState>((set, get) => ({
-  cart: [],
-  selectedTableId: null,
-  selectedCustomerId: null,
-  orderType: "DINE_IN",
-  discount: 0,
-  discountType: "PERCENTAGE",
-  notes: "",
-
-  addItem: (item) => {
-    const { cart } = get();
-    const existingIdx = cart.findIndex(
-      (c) =>
-        c.menuItemId === item.menuItemId &&
-        c.variantId === item.variantId &&
-        JSON.stringify(c.modifiers) === JSON.stringify(item.modifiers)
-    );
-
-    if (existingIdx >= 0) {
-      const updated = [...cart];
-      updated[existingIdx].quantity += item.quantity;
-      set({ cart: updated });
-    } else {
-      set({
-        cart: [...cart, { ...item, id: crypto.randomUUID() }],
-      });
-    }
-  },
-
-  removeItem: (id) =>
-    set((s) => ({ cart: s.cart.filter((c) => c.id !== id) })),
-
-  updateQuantity: (id, quantity) =>
-    set((s) => ({
-      cart:
-        quantity <= 0
-          ? s.cart.filter((c) => c.id !== id)
-          : s.cart.map((c) => (c.id === id ? { ...c, quantity } : c)),
-    })),
-
-  updateNotes: (id, notes) =>
-    set((s) => ({
-      cart: s.cart.map((c) => (c.id === id ? { ...c, notes } : c)),
-    })),
-
-  setTable: (id) => set({ selectedTableId: id }),
-  setCustomer: (id) => set({ selectedCustomerId: id }),
-  setOrderType: (type) => set({ orderType: type }),
-  setDiscount: (amount, type) => set({ discount: amount, discountType: type }),
-  setNotes: (notes) => set({ notes }),
-  clearCart: () =>
-    set({
+export const usePOSStore = create<POSState>()(
+  persist(
+    (set, get) => ({
       cart: [],
       selectedTableId: null,
       selectedCustomerId: null,
+      orderType: "DINE_IN",
       discount: 0,
+      discountType: "PERCENTAGE",
       notes: "",
+
+      addItem: (item) => {
+        const { cart } = get();
+        const existingIdx = cart.findIndex(
+          (c) =>
+            c.menuItemId === item.menuItemId &&
+            c.variantId === item.variantId &&
+            JSON.stringify(c.modifiers) === JSON.stringify(item.modifiers)
+        );
+
+        if (existingIdx >= 0) {
+          const updated = [...cart];
+          updated[existingIdx].quantity += item.quantity;
+          set({ cart: updated });
+        } else {
+          set({
+            cart: [...cart, { ...item, id: crypto.randomUUID() }],
+          });
+        }
+      },
+
+      removeItem: (id) =>
+        set((s) => ({ cart: s.cart.filter((c) => c.id !== id) })),
+
+      updateQuantity: (id, quantity) =>
+        set((s) => ({
+          cart:
+            quantity <= 0
+              ? s.cart.filter((c) => c.id !== id)
+              : s.cart.map((c) => (c.id === id ? { ...c, quantity } : c)),
+        })),
+
+      updateNotes: (id, notes) =>
+        set((s) => ({
+          cart: s.cart.map((c) => (c.id === id ? { ...c, notes } : c)),
+        })),
+
+      setTable: (id) => set({ selectedTableId: id }),
+      setCustomer: (id) => set({ selectedCustomerId: id }),
+      setOrderType: (type) => set({ orderType: type }),
+      setDiscount: (amount, type) => set({ discount: amount, discountType: type }),
+      setNotes: (notes) => set({ notes }),
+      clearCart: () =>
+        set({
+          cart: [],
+          selectedTableId: null,
+          selectedCustomerId: null,
+          discount: 0,
+          notes: "",
+        }),
+
+      subtotal: () => {
+        const { cart } = get();
+        return cart.reduce((sum, item) => {
+          const modTotal = item.modifiers.reduce((ms, m) => ms + m.price, 0);
+          return sum + (item.unitPrice + modTotal) * item.quantity;
+        }, 0);
+      },
+
+      discountAmount: () => {
+        const { discount, discountType } = get();
+        const sub = get().subtotal();
+        if (discountType === "PERCENTAGE") return (sub * discount) / 100;
+        return Math.min(discount, sub);
+      },
+
+      total: () => {
+        return get().subtotal() - get().discountAmount();
+      },
     }),
-
-  subtotal: () => {
-    const { cart } = get();
-    return cart.reduce((sum, item) => {
-      const modTotal = item.modifiers.reduce((ms, m) => ms + m.price, 0);
-      return sum + (item.unitPrice + modTotal) * item.quantity;
-    }, 0);
-  },
-
-  discountAmount: () => {
-    const { discount, discountType } = get();
-    const sub = get().subtotal();
-    if (discountType === "PERCENTAGE") return (sub * discount) / 100;
-    return Math.min(discount, sub);
-  },
-
-  total: () => {
-    return get().subtotal() - get().discountAmount();
-  },
-}));
+    {
+      name: "pos-cart",
+      partialize: (s) => ({
+        cart: s.cart,
+        selectedTableId: s.selectedTableId,
+        selectedCustomerId: s.selectedCustomerId,
+        orderType: s.orderType,
+        discount: s.discount,
+        discountType: s.discountType,
+        notes: s.notes,
+      }),
+    }
+  )
+);

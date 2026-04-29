@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -12,6 +13,12 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  const rl = rateLimit(`signup:${ip}`, 10, 60 * 60 * 1000); // 10 signups per hour per IP
+  if (!rl.success) {
+    return NextResponse.json({ message: "Çok fazla deneme. Lütfen daha sonra tekrar deneyin." }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const data = schema.parse(body);

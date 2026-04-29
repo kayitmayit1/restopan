@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { CategoryModal } from "./category-modal";
 import { ItemModal } from "./item-modal";
 import { TemplateModal } from "./template-modal";
+import { useRouter } from "next/navigation";
 
 interface MenuItemVariant {
   id: string;
@@ -66,6 +67,7 @@ export function MenuManagement({
   categories: initialCategories,
   organizationId,
 }: MenuManagementProps) {
+  const router = useRouter();
   const [categories, setCategories] = useState(initialCategories);
   const [search, setSearch] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
@@ -75,6 +77,7 @@ export function MenuManagement({
   const [editItem, setEditItem] = useState<MenuItem | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ catId: string; itemId: string; name: string } | null>(null);
 
   const totalItems = categories.reduce((s, c) => s + c.items.length, 0);
   const activeItems = categories.reduce(
@@ -120,7 +123,6 @@ export function MenuManagement({
   }
 
   async function deleteItem(catId: string, itemId: string) {
-    if (!confirm("Bu ürünü silmek istediğinize emin misiniz?")) return;
     try {
       await fetch(`/api/menu/items/${itemId}`, { method: "DELETE" });
       setCategories((prev) =>
@@ -405,7 +407,7 @@ export function MenuManagement({
                                 Düzenle
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => deleteItem(cat.id, item.id)}
+                                onClick={() => setConfirmDelete({ catId: cat.id, itemId: item.id, name: item.name })}
                                 className="text-destructive"
                               >
                                 <Trash2 className="w-3.5 h-3.5 mr-2" />
@@ -430,7 +432,7 @@ export function MenuManagement({
           onClose={() => setShowTemplateModal(false)}
           onImported={() => {
             setShowTemplateModal(false);
-            window.location.reload();
+            router.refresh();
           }}
         />
       )}
@@ -485,6 +487,35 @@ export function MenuManagement({
             setShowItemModal(false);
           }}
         />
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-background rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+              <Trash2 className="w-5 h-5 text-red-600" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold">Ürünü Sil</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                <strong>{confirmDelete.name}</strong> ürününü silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setConfirmDelete(null)}>İptal</Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={async () => {
+                  await deleteItem(confirmDelete.catId, confirmDelete.itemId);
+                  setConfirmDelete(null);
+                }}
+              >
+                Sil
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

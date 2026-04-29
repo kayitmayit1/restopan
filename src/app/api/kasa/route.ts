@@ -3,6 +3,35 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { startOfDay, endOfDay } from "date-fns";
 
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user.organizationId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { cashOnHand, cashDiff, grossRevenue, totalExpenses, netRevenue } = await req.json();
+
+  await db.auditLog.create({
+    data: {
+      organizationId: session.user.organizationId,
+      userId: session.user.id,
+      action: "KASA_CLOSE",
+      entity: "Kasa",
+      newData: { cashOnHand, cashDiff, grossRevenue, totalExpenses, netRevenue, closedAt: new Date().toISOString() },
+    },
+  });
+
+  await db.notification.create({
+    data: {
+      organizationId: session.user.organizationId,
+      title: "Kasa Kapatıldı",
+      body: `Net ciro: ₺${netRevenue?.toFixed(2) ?? "0.00"} · Nakit fark: ${cashDiff >= 0 ? "+" : ""}₺${cashDiff?.toFixed(2) ?? "0.00"}`,
+      type: "SYSTEM",
+    },
+  });
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user.organizationId) {

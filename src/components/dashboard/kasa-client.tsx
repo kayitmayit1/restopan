@@ -17,6 +17,7 @@ import {
   Receipt,
   Printer,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 
 const METHOD_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
@@ -67,13 +68,33 @@ export function KasaClient({ orders, expenses, locationId: _locationId }: KasaCl
   const cashInput = parseFloat(cashOnHand) || 0;
   const cashDiff = cashOnHand !== "" ? cashInput - expectedCash : null;
 
-  function handleClose() {
+  const [closing, setClosing] = useState(false);
+
+  async function handleClose() {
     if (cashOnHand === "") {
       toast.error("Nakit sayım miktarını girin");
       return;
     }
-    setClosed(true);
-    toast.success("Kasa kapatıldı", { description: `Net ciro: ${formatCurrency(netRevenue)}` });
+    setClosing(true);
+    try {
+      await fetch("/api/kasa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cashOnHand: cashInput,
+          cashDiff,
+          grossRevenue,
+          totalExpenses,
+          netRevenue,
+        }),
+      });
+      setClosed(true);
+      toast.success("Kasa kapatıldı", { description: `Net ciro: ${formatCurrency(netRevenue)}` });
+    } catch {
+      toast.error("Kasa kapatılamadı");
+    } finally {
+      setClosing(false);
+    }
   }
 
   if (closed) {
@@ -236,8 +257,8 @@ export function KasaClient({ orders, expenses, locationId: _locationId }: KasaCl
               </div>
             </div>
 
-            <Button onClick={handleClose} className="w-full">
-              <CheckCircle2 className="w-4 h-4 mr-2" />
+            <Button onClick={handleClose} disabled={closing} className="w-full">
+              {closing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
               Kasayı Kapat
             </Button>
 

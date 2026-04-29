@@ -77,7 +77,12 @@ export function TransferTableModal({
             <p className="text-sm text-center py-6 text-muted-foreground">Uygun boş masa yok</p>
           ) : (
             <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto">
-              {availableTables.map((t) => (
+              {[...availableTables]
+                .sort((a, b) => {
+                  const na = parseInt(a.name, 10), nb = parseInt(b.name, 10);
+                  return !isNaN(na) && !isNaN(nb) ? na - nb : a.name.localeCompare(b.name, "tr");
+                })
+                .map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setSelected(t.id)}

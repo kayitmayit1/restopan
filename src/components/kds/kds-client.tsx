@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { RefreshCw, Clock, CheckCircle, ChefHat, Flame, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useOrderSound } from "@/hooks/use-order-sound";
 
 interface KitchenTicket {
   id: string;
@@ -158,8 +159,21 @@ export function KDSClient({ initialTickets }: { initialTickets: KitchenTicket[] 
   const [tickets, setTickets] = useState(initialTickets);
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "IN_PROGRESS">("ALL");
 
+  useOrderSound(true);
+
   useEffect(() => {
-    const interval = setInterval(() => router.refresh(), 10000);
+    const es = new EventSource("/api/events");
+    es.onmessage = (e) => {
+      try {
+        const { event } = JSON.parse(e.data);
+        if (event === "order:new") router.refresh();
+      } catch { /* ignore */ }
+    };
+    return () => es.close();
+  }, [router]);
+
+  useEffect(() => {
+    const interval = setInterval(() => router.refresh(), 30000);
     return () => clearInterval(interval);
   }, [router]);
 

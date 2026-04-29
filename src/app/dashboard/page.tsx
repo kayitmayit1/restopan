@@ -7,6 +7,7 @@ import { RecentOrders } from "@/components/dashboard/recent-orders";
 import { TopItems } from "@/components/dashboard/top-items";
 import { LiveTables } from "@/components/dashboard/live-tables";
 import { LowStockAlert } from "@/components/dashboard/low-stock-alert";
+import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
 import { startOfDay, endOfDay, subDays } from "date-fns";
 
 async function getDashboardData(organizationId: string, locationId?: string) {
@@ -30,6 +31,8 @@ async function getDashboardData(organizationId: string, locationId?: string) {
     topItems,
     revenueData,
     prevRevenueData,
+    menuItemCount,
+    staffCount,
   ] = await Promise.all([
     db.order.aggregate({
       where: {
@@ -112,6 +115,8 @@ async function getDashboardData(organizationId: string, locationId?: string) {
       },
       _sum: { totalAmount: true },
     }),
+    db.menuItem.count({ where: { organizationId, isActive: true } }),
+    db.organizationMember.count({ where: { organizationId, role: { not: "OWNER" } } }),
   ]);
 
   const menuItemIds = topItems.map((i) => i.menuItemId);
@@ -135,6 +140,9 @@ async function getDashboardData(organizationId: string, locationId?: string) {
     })),
     revenueData,
     prevRevenueData,
+    hasMenu: menuItemCount > 0,
+    hasTables: tables.length > 0,
+    hasStaff: staffCount > 0,
   };
 }
 
@@ -155,6 +163,14 @@ export default async function DashboardPage() {
       />
 
       <div className="p-6 space-y-6">
+        {(!data.hasMenu || !data.hasTables || !data.hasStaff) && (
+          <OnboardingGuide
+            hasMenu={data.hasMenu}
+            hasTables={data.hasTables}
+            hasStaff={data.hasStaff}
+          />
+        )}
+
         <DashboardStats
           todayRevenue={data.todayRevenue}
           todayOrderCount={data.todayOrderCount}

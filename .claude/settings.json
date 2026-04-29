@@ -21,10 +21,17 @@
       "Bash(curl -s -X POST http://localhost:3000/api/menu/items -H 'Content-Type: application/json' -d '{\"organizationId\":\"test\",\"categoryId\":\"test\",\"name\":\"Test\",\"price\":10,\"isActive\":true,\"isAvailable\":true,\"isFeatured\":false}')",
       "Bash(curl -s -X POST http://localhost:3001/api/menu/items -H 'Content-Type: application/json' -d '{\"organizationId\":\"test\",\"categoryId\":\"test\",\"name\":\"Test\",\"price\":10,\"isActive\":true,\"isAvailable\":true,\"isFeatured\":false}')",
       "Bash(curl -s http://localhost:3000/api/menu/items -X POST -H \"Content-Type: application/json\" -d '{\"name\":\"test\",\"price\":10,\"organizationId\":\"x\",\"categoryId\":\"y\",\"isActive\":true,\"isAvailable\":true,\"isFeatured\":false}')",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(mkdir -p c:/Users/okury/Desktop/restoran/src/app/api/notifications)",
+      "Bash(mkdir -p c:/Users/okury/Desktop/restoran/src/app/api/notifications/read-all)",
+      "Bash(mkdir -p c:/Users/okury/Desktop/restoran/src/app/dashboard/bildirimler)",
+      "Bash(grep -rn 'fetch\\(`/api/' c:/Users/okury/Desktop/restoran/src/components --include=\"*.tsx\")",
+      "Bash(grep -rn 'api/orders/\\\\${' c:/Users/okury/Desktop/restoran/src --include=\"*.tsx\" --include=\"*.ts\")"
     ],
     "additionalDirectories": [
-      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar"
+      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar",
+      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\api\\orders\\[id]",
+      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\api\\customers\\[id]"
     ]
   }
 }
