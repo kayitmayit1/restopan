@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Loader2, Mail, Copy, Check, AlertTriangle } from "lucide-react";
+import { X, Loader2, Mail, Copy, Check, AlertTriangle, Lock } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const ROLES = [
   { value: "MANAGER", label: "Müdür" },
@@ -21,6 +22,7 @@ export function InviteModal({ organizationId, onClose }: { organizationId: strin
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("WAITER");
   const [result, setResult] = useState<{ emailSent: boolean; inviteUrl: string } | null>(null);
+  const [limitExceeded, setLimitExceeded] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -32,8 +34,12 @@ export function InviteModal({ organizationId, onClose }: { organizationId: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ organizationId, email, role }),
       });
-      if (!res.ok) throw new Error();
       const json = await res.json();
+      if (res.status === 403 && json.error === "PLAN_LIMIT_EXCEEDED") {
+        setLimitExceeded(json.message);
+        return;
+      }
+      if (!res.ok) throw new Error();
       setResult({ emailSent: json.emailSent, inviteUrl: json.inviteUrl });
       if (json.emailSent) {
         toast.success("Davet e-postası gönderildi");
@@ -62,7 +68,25 @@ export function InviteModal({ organizationId, onClose }: { organizationId: strin
           <h2 className="font-semibold">Personel Davet Et</h2>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="w-4 h-4" /></Button>
         </div>
-        {result ? (
+        {limitExceeded ? (
+          <div className="p-6 flex flex-col items-center gap-4 text-center">
+            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+              <Lock className="w-7 h-7 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-semibold">Kullanıcı Limiti Doldu</p>
+              <p className="text-sm text-muted-foreground mt-1">{limitExceeded}</p>
+            </div>
+            <Link
+              href="/dashboard/ayarlar/fatura"
+              className="w-full bg-primary text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-center"
+              onClick={onClose}
+            >
+              Planı Yükselt →
+            </Link>
+            <Button variant="outline" onClick={onClose} className="w-full">Kapat</Button>
+          </div>
+        ) : result ? (
           <div className="p-6 flex flex-col items-center gap-4 text-center">
             <div className={`w-14 h-14 rounded-full flex items-center justify-center ${result.emailSent ? "bg-emerald-100" : "bg-amber-100"}`}>
               {result.emailSent
@@ -109,7 +133,9 @@ export function InviteModal({ organizationId, onClose }: { organizationId: strin
             <div className="space-y-2">
               <Label>Rol</Label>
               <Select value={role} onValueChange={(v) => v !== null && setRole(v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue>{ROLES.find((r) => r.value === role)?.label}</SelectValue>
+                </SelectTrigger>
                 <SelectContent>{ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>

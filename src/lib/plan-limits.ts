@@ -1,5 +1,5 @@
 export const PLAN_LIMITS = {
-  STARTER: { tables: 10, members: 2, locations: 1 },
+  STARTER: { tables: 10, members: 3, locations: 1 },
   PROFESSIONAL: { tables: 50, members: 10, locations: 3 },
   ENTERPRISE: { tables: Infinity, members: Infinity, locations: Infinity },
 } as const;
