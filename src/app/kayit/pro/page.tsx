@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Rocket, CheckCircle2 } from "lucide-react";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
 
 const schema = z.object({
@@ -29,7 +29,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function KayitPage() {
+export default function ProKayitPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -45,7 +45,7 @@ export default function KayitPage() {
       const res = await fetch("/api/auth/kayit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, plan: "PROFESSIONAL" }),
       });
 
       if (!res.ok) {
@@ -61,7 +61,7 @@ export default function KayitPage() {
       });
 
       router.push("/onboarding");
-      toast.success("Hoş geldiniz! Restoranınızı kuralım.");
+      toast.success("Hoş geldiniz! 14 günlük denemeniz başladı.");
     } finally {
       setLoading(false);
     }
@@ -73,9 +73,22 @@ export default function KayitPage() {
         <div className="flex flex-col items-center gap-3">
           <RestoPanLogo iconSize={48} />
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Starter Plan — Sonsuza Kadar Ücretsiz
-            </p>
+            <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 rounded-full mb-2">
+              <Rocket className="w-3 h-3" />
+              Professional Plan — 14 Gün Ücretsiz Deneme
+            </div>
+            <p className="text-xs text-muted-foreground">Kredi kartı gerekmez · İstediğiniz zaman iptal</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-sm">
+          <div className="flex flex-col gap-1 w-full">
+            {["50 masa, 10 kullanıcı, 3 şube", "Online sipariş & QR menü", "WhatsApp destek — 1 saat yanıt"].map((f) => (
+              <div key={f} className="flex items-center gap-2 text-xs text-gray-600">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                {f}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -83,7 +96,7 @@ export default function KayitPage() {
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl">Hesap Oluştur</CardTitle>
             <CardDescription>
-              Kredi kartı gerekmez, süre sınırı yok
+              14 gün boyunca tüm özellikleri ücretsiz kullanın
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -150,7 +163,7 @@ export default function KayitPage() {
                 {loading && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
-                Ücretsiz Başla
+                14 Gün Ücretsiz Başla
               </Button>
             </form>
 

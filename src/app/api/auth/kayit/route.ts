@@ -10,6 +10,7 @@ const schema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   organizationName: z.string().min(2),
+  plan: z.enum(["STARTER", "PROFESSIONAL"]).optional().default("STARTER"),
 });
 
 export async function POST(req: NextRequest) {
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       data: {
         name: data.organizationName,
         slug,
-        plan: "STARTER",
+        plan: data.plan,
         members: {
           create: {
             userId: user.id,
@@ -65,16 +66,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create trial subscription
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14);
+    const now = new Date();
+    const isPro = data.plan === "PROFESSIONAL";
+    const periodEnd = new Date(now);
+    if (isPro) {
+      periodEnd.setDate(periodEnd.getDate() + 14);
+    } else {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 100);
+    }
 
     await db.subscription.create({
       data: {
         organizationId: organization.id,
-        status: "TRIALING",
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: trialEnd,
+        status: isPro ? "TRIALING" : "ACTIVE",
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
       },
     });
 

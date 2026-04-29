@@ -65,7 +65,7 @@ const PLANS = [
     color: "text-primary",
     features: ["50 masa", "10 kullanıcı", "3 şube", "Tüm özellikler", "Online sipariş", "WhatsApp destek — 1 saat yanıt (09:00–22:00)"],
     cta: "14 Gün Ücretsiz Dene",
-    href: "/kayit",
+    href: "/kayit/pro",
     highlight: true,
     badge: "En Popüler",
   },
@@ -138,7 +138,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-24 text-center">
         <div className="inline-flex items-center gap-2 bg-primary/8 text-primary text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
           <Zap className="w-3 h-3" />
-          14 gün ücretsiz — kredi kartı gerekmez
+          Starter plan sonsuza kadar ücretsiz
         </div>
 
         <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] mb-6">
@@ -453,7 +453,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight mb-4">Şeffaf fiyatlandırma</h2>
-            <p className="text-muted-foreground">14 gün ücretsiz deneyin. Kredi kartı gerekmez.</p>
+            <p className="text-muted-foreground">Starter sonsuza kadar ücretsiz. Professional için 14 gün ücretsiz deneme.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {PLANS.map((plan) => (
@@ -495,9 +495,9 @@ export default function LandingPage() {
       <section className="py-24">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight mb-4">Hemen başlayın</h2>
-          <p className="text-muted-foreground mb-8">14 gün ücretsiz, kredi kartı gerekmez. İstediğiniz zaman iptal.</p>
-          <Link href="/kayit" className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-8 py-4 rounded-xl hover:bg-primary/90 transition-colors">
-            Ücretsiz Hesap Oluştur <ArrowRight className="w-4 h-4" />
+          <p className="text-muted-foreground mb-8">Professional planı 14 gün ücretsiz deneyin. Kredi kartı gerekmez, istediğiniz zaman iptal.</p>
+          <Link href="/kayit/pro" className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-8 py-4 rounded-xl hover:bg-primary/90 transition-colors">
+            14 Gün Ücretsiz Dene <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
