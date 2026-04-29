@@ -19,7 +19,7 @@ export async function checkLimit(
   if (resource === "tables") {
     current = await db.table.count({ where: { location: { organizationId } } });
   } else if (resource === "members") {
-    current = await db.organizationMember.count({ where: { organizationId } });
+    current = await db.organizationMember.count({ where: { organizationId, role: { not: "OWNER" } } });
   } else if (resource === "locations") {
     current = await db.location.count({ where: { organizationId } });
   }
