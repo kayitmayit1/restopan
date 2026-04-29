@@ -61,14 +61,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/api/pwa/icon?size=32", sizes: "32x32", type: "image/png" },
-      { url: "/api/pwa/icon?size=96", sizes: "96x96", type: "image/png" },
+      { url: "/icon", sizes: "32x32", type: "image/png" },
       { url: "/api/pwa/icon?size=192", sizes: "192x192", type: "image/png" },
     ],
     apple: [
-      { url: "/api/pwa/icon?size=180", sizes: "180x180", type: "image/png" },
+      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/api/pwa/icon?size=192",
+    shortcut: "/icon",
   },
 };
 

@@ -17,8 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
+import Link from "next/link";
 
 const schema = z.object({
   name: z.string().min(2, "İsim en az 2 karakter olmalı"),
@@ -70,6 +71,10 @@ export default function KayitPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 p-4">
       <div className="w-full max-w-md space-y-6">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Ana Sayfaya Dön
+        </Link>
         <div className="flex flex-col items-center gap-3">
           <RestoPanLogo iconSize={48} />
           <div className="text-center">
