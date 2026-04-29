@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
-import { ArrowLeft, Code2, Heart, Rocket, Shield, Zap, Globe } from "lucide-react";
+import { ArrowLeft, Heart, Rocket, Shield, Zap, Globe, Building2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Hakkımızda",
@@ -16,33 +16,24 @@ export const metadata: Metadata = {
 const VALUES = [
   {
     icon: Heart,
-    title: "Sektörü Bilerek Yapıyoruz",
-    desc: "Restoran ortamının hızını, stresini ve gereksinimlerini bilerek tasarladık. Her ekran, gerçek kullanım senaryoları gözetilerek kurgulandı.",
+    title: "Sektör Odaklı Tasarım",
+    desc: "Her modül, restoran ortamının dinamiklerine göre kurgulanmıştır. Sipariş akışından mutfak koordinasyonuna, stok yönetiminden personel organizasyonuna kadar tüm süreçler gerçek işletme ihtiyaçları esas alınarak tasarlanmıştır.",
   },
   {
     icon: Zap,
-    title: "Basitlik İlke",
-    desc: "İşletme sahibinin yazılımcı olmasına gerek yok. Kurulum 15 dakika, öğrenme eğrisi sıfıra yakın.",
+    title: "Operasyonel Sadelik",
+    desc: "Karmaşık kurulum süreçleri ve uzun eğitim dönemleri olmaksızın sisteme geçiş sağlanır. Platform, teknik ön bilgi gerektirmeden 15 dakika içinde kullanıma hazır hale gelir.",
   },
   {
     icon: Shield,
-    title: "Veri Güvenliği",
-    desc: "Tüm veriler Türkiye'de KVKK uyumlu sunucularda tutulur. Şifreler bcrypt ile hashlenir, bağlantılar HTTPS ile şifrelenir.",
+    title: "Veri Güvenliği ve Uyumluluk",
+    desc: "Tüm veriler Türkiye'de barındırılan KVKK uyumlu altyapıda işlenir ve saklanır. Kimlik doğrulama, şifreleme ve erişim denetimi uluslararası güvenlik standartlarına göre yapılandırılmıştır.",
   },
   {
     icon: Globe,
-    title: "Türkiye'ye Özel",
-    desc: "TRY para birimi, %10/%20 KDV desteği, KVKK, Türkçe arayüz ve Türkiye saati — uluslararası araçlarda olmayan detaylar.",
+    title: "Türkiye Koşullarına Uygunluk",
+    desc: "TRY para birimi, %10 ve %20 KDV oranları, KVKK gereklilikleri ve Türkçe arayüz başta olmak üzere Türkiye'ye özgü yasal ve operasyonel gereksinimler sistem genelinde karşılanmaktadır.",
   },
-];
-
-const STACK = [
-  { label: "Arayüz", value: "Next.js 16 + TypeScript + Tailwind CSS" },
-  { label: "Veritabanı", value: "PostgreSQL + Prisma ORM" },
-  { label: "Kimlik Doğrulama", value: "NextAuth v5 (JWT)" },
-  { label: "E-posta", value: "Resend" },
-  { label: "Ödeme", value: "iyzico" },
-  { label: "Altyapı", value: "Vercel / Railway" },
 ];
 
 export default function HakkimizdaPage() {
@@ -61,20 +52,21 @@ export default function HakkimizdaPage() {
         {/* Hero */}
         <div className="mb-14">
           <div className="inline-flex items-center gap-2 bg-orange-50 text-primary text-xs font-medium px-3 py-1 rounded-full mb-4">
-            <Code2 className="w-3.5 h-3.5" /> Yerli Yazılım
+            <Building2 className="w-3.5 h-3.5" /> Yerli SaaS Platformu
           </div>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Restoranlar için<br className="hidden sm:block" /> yaptık, seviniz.
+            Türkiye&apos;nin restoran<br className="hidden sm:block" /> yönetim platformu
           </h1>
           <p className="text-muted-foreground leading-relaxed text-base max-w-xl">
-            RestoPAN, Türkiye'deki kafe ve restoranların sipariş, mutfak, stok ve personel
-            süreçlerini tek bir ekranda yönetebilmesi için geliştirilmiş yerli bir SaaS platformudur.
+            RestoPAN, kafe ve restoranların sipariş, mutfak, stok ve personel süreçlerini
+            tek bir platform üzerinden yönetmesini sağlayan, Türkiye&apos;de geliştirilmiş
+            bir kurumsal SaaS çözümüdür.
           </p>
         </div>
 
         {/* Values */}
         <section className="mb-14">
-          <h2 className="text-xl font-semibold mb-6">Değerlerimiz</h2>
+          <h2 className="text-xl font-semibold mb-6">İlkelerimiz</h2>
           <div className="grid sm:grid-cols-2 gap-6">
             {VALUES.map((v) => (
               <div key={v.title} className="border rounded-xl p-5">
@@ -90,32 +82,17 @@ export default function HakkimizdaPage() {
           </div>
         </section>
 
-        {/* Tech Stack */}
-        <section className="mb-14">
-          <h2 className="text-xl font-semibold mb-2">Teknoloji Altyapısı</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            Açık kaynak bileşenler ve modern web teknolojileri üzerine inşa edildi.
-          </p>
-          <div className="border rounded-xl overflow-hidden divide-y text-sm">
-            {STACK.map((s) => (
-              <div key={s.label} className="flex items-center px-5 py-3 gap-4">
-                <span className="w-36 text-muted-foreground shrink-0">{s.label}</span>
-                <span className="font-medium">{s.value}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Mission */}
         <section className="mb-14 bg-orange-50 rounded-2xl p-8">
           <div className="flex items-center gap-2 mb-3">
             <Rocket className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold">Misyon</h2>
+            <h2 className="text-lg font-semibold">Misyonumuz</h2>
           </div>
           <p className="text-muted-foreground leading-relaxed text-sm">
-            Küçük ve orta ölçekli restoranların, büyük zincirlerin kullandığı profesyonel
-            yazılımlara erişebilmesini sağlamak. Kompleks kurulum gerektirmeyen, makul fiyatlı
-            ve Türkiye koşullarına uygun bir çözüm sunmak.
+            Küçük ve orta ölçekli işletmelerin, kurumsal zincir restoranların sahip olduğu
+            profesyonel yönetim altyapısına erişimini demokratikleştirmek. Yüksek kurulum
+            maliyeti ve teknik yük gerektirmeyen, Türkiye&apos;nin yasal ve operasyonel
+            koşullarına tam uyumlu, sürdürülebilir fiyatlandırmayla sunulan bir platform inşa etmek.
           </p>
         </section>
 
