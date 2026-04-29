@@ -15,7 +15,15 @@ export default async function DashboardLayout({
   let trialBanner: { daysLeft: number } | null = null;
   let gateReason: "expired" | "past_due" | "canceled" | null = null;
 
-  if (session.user.organizationId) {
+  const org = session.user.organizationId
+    ? await db.organization.findUnique({
+        where: { id: session.user.organizationId },
+        select: { plan: true },
+      })
+    : null;
+
+  // Trial/gate kontrolleri sadece ücretli planlarda geçerli — STARTER sonsuza kadar ücretsiz
+  if (session.user.organizationId && org?.plan !== "STARTER") {
     const sub = await db.subscription.findFirst({
       where: { organizationId: session.user.organizationId },
       orderBy: { createdAt: "desc" },
@@ -33,19 +41,12 @@ export default async function DashboardLayout({
         );
         if (daysLeft === 0) {
           gateReason = "expired";
-        } else if (daysLeft <= 10) {
+        } else {
           trialBanner = { daysLeft };
         }
       }
     }
   }
-
-  const org = session.user.organizationId
-    ? await db.organization.findUnique({
-        where: { id: session.user.organizationId },
-        select: { plan: true },
-      })
-    : null;
 
   return (
     <DashboardShell

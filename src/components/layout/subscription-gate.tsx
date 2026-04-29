@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Lock, Zap } from "lucide-react";
+import { Loader2, Lock, Zap, ArrowDownCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -42,6 +42,20 @@ export function SubscriptionGate({ reason }: Props) {
       else throw new Error();
     } catch {
       toast.error("Yönlendirme başarısız");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handleDowngrade() {
+    setLoading("downgrade");
+    try {
+      const res = await fetch("/api/billing/downgrade", { method: "POST" });
+      if (!res.ok) throw new Error();
+      toast.success("Starter plana geçildi");
+      window.location.reload();
+    } catch {
+      toast.error("İşlem başarısız");
     } finally {
       setLoading(null);
     }
@@ -106,6 +120,20 @@ export function SubscriptionGate({ reason }: Props) {
             </Button>
           </div>
         </div>
+
+        {reason === "expired" && (
+          <button
+            onClick={handleDowngrade}
+            disabled={!!loading}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
+          >
+            {loading === "downgrade"
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <ArrowDownCircle className="w-3.5 h-3.5" />
+            }
+            Hayır, Starter plana geç (ücretsiz, bazı özellikler kısıtlanır)
+          </button>
+        )}
 
         {reason === "past_due" && (
           <p className="text-sm text-muted-foreground">

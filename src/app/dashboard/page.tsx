@@ -8,7 +8,12 @@ import { TopItems } from "@/components/dashboard/top-items";
 import { LiveTables } from "@/components/dashboard/live-tables";
 import { LowStockAlert } from "@/components/dashboard/low-stock-alert";
 import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
+import { ShiftWidget } from "@/components/dashboard/shift-widget";
 import { startOfDay, endOfDay, subDays } from "date-fns";
+import Link from "next/link";
+import { ShoppingCart, LayoutGrid, ChefHat, UtensilsCrossed } from "lucide-react";
+
+const STAFF_ROLES = ["WAITER", "KITCHEN", "CASHIER", "STAFF"];
 
 async function getDashboardData(organizationId: string, locationId?: string) {
   const today = new Date();
@@ -150,6 +155,42 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user.organizationId) return null;
 
+  const role = session.user.role ?? "";
+  const isStaff = STAFF_ROLES.includes(role);
+  const todayLabel = new Date().toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" });
+
+  if (isStaff) {
+    const quickLinks = [
+      { href: "/dashboard/pos", icon: ShoppingCart, label: "POS Sistemi" },
+      { href: "/dashboard/siparisler", icon: UtensilsCrossed, label: "Siparişler" },
+      { href: "/dashboard/masalar", icon: LayoutGrid, label: "Masa Planı" },
+      { href: "/dashboard/mutfak", icon: ChefHat, label: "Mutfak" },
+    ];
+
+    return (
+      <div>
+        <Topbar title="Hoş Geldiniz" subtitle={`Bugün, ${todayLabel}`} />
+        <div className="p-6 space-y-6 max-w-lg mx-auto">
+          <ShiftWidget />
+          <div className="grid grid-cols-2 gap-3">
+            {quickLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="flex items-center gap-3 p-4 rounded-2xl border bg-card shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+              >
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <l.icon className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium">{l.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const data = await getDashboardData(
     session.user.organizationId,
     session.user.locationId
@@ -159,7 +200,7 @@ export default async function DashboardPage() {
     <div>
       <Topbar
         title="Dashboard"
-        subtitle={`Bugün, ${new Date().toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}`}
+        subtitle={`Bugün, ${todayLabel}`}
       />
 
       <div className="p-6 space-y-6">

@@ -59,18 +59,31 @@ export function DashboardShell({ children, plan, trialDaysLeft, gateNode }: Dash
         </div>
 
         {trialDaysLeft && (
-          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2 text-amber-800 text-sm">
+          <div className={`border-b px-4 py-2 flex items-center justify-between shrink-0 ${
+            trialDaysLeft <= 3
+              ? "bg-red-50 border-red-200"
+              : trialDaysLeft <= 7
+              ? "bg-orange-50 border-orange-200"
+              : "bg-amber-50 border-amber-200"
+          }`}>
+            <div className={`flex items-center gap-2 text-sm ${
+              trialDaysLeft <= 3 ? "text-red-800" : trialDaysLeft <= 7 ? "text-orange-800" : "text-amber-800"
+            }`}>
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>
-                Deneme sürenizin bitmesine <strong>{trialDaysLeft} gün</strong> kaldı.
+                {trialDaysLeft <= 3
+                  ? <>Professional deneme süreniz <strong>{trialDaysLeft} gün</strong> içinde bitiyor! Verilerinizi kaybetmemek için hemen satın alın.</>
+                  : <>Professional denemenizin bitmesine <strong>{trialDaysLeft} gün</strong> kaldı.</>
+                }
               </span>
             </div>
             <Link
               href="/dashboard/ayarlar/fatura"
-              className="text-xs font-semibold text-amber-900 underline underline-offset-2 hover:text-amber-700"
+              className={`text-xs font-semibold underline underline-offset-2 shrink-0 ml-4 ${
+                trialDaysLeft <= 3 ? "text-red-900 hover:text-red-700" : trialDaysLeft <= 7 ? "text-orange-900 hover:text-orange-700" : "text-amber-900 hover:text-amber-700"
+              }`}
             >
-              Planı Yükselt →
+              Satın Al →
             </Link>
           </div>
         )}
