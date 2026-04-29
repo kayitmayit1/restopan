@@ -49,19 +49,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
       }
-      // Load membership on sign-in or explicit update
       if (token.id && (user || trigger === "update" || !token.organizationId)) {
-        const membership = await db.organizationMember.findFirst({
-          where: { userId: token.id as string },
-          include: { organization: true },
-          orderBy: { createdAt: "asc" },
-        });
-        if (membership) {
-          token.organizationId = membership.organizationId;
-          token.organizationSlug = membership.organization.slug;
-          token.role = membership.role;
-          token.locationId = membership.locationId ?? undefined;
-          token.plan = membership.organization.plan;
+        try {
+          const membership = await db.organizationMember.findFirst({
+            where: { userId: token.id as string },
+            include: { organization: true },
+            orderBy: { createdAt: "asc" },
+          });
+          if (membership) {
+            token.organizationId = membership.organizationId;
+            token.organizationSlug = membership.organization.slug;
+            token.role = membership.role;
+            token.locationId = membership.locationId ?? undefined;
+            token.plan = membership.organization.plan;
+          }
+        } catch (err) {
+          console.error("[auth] jwt db lookup failed:", err);
         }
       }
       return token;
