@@ -116,6 +116,7 @@ export default function LandingPage() {
             <a href="#ozellikler" className="hover:text-foreground transition-colors">Özellikler</a>
             <a href="#fiyatlar" className="hover:text-foreground transition-colors">Fiyatlar</a>
             <a href="#yorumlar" className="hover:text-foreground transition-colors">Yorumlar</a>
+            <Link href="/sss" className="hover:text-foreground transition-colors">SSS</Link>
             <Link href="/hakkimizda" className="hover:text-foreground transition-colors">Hakkımızda</Link>
             <Link href="/iletisim" className="hover:text-foreground transition-colors">İletişim</Link>
             <Link href="/destek" className="hover:text-foreground transition-colors">Destek</Link>
