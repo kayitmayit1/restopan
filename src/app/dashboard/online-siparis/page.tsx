@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { hasFeature, type PlanType } from "@/lib/plan-limits";
+import { PlanGate } from "@/components/layout/plan-gate";
 import { QrCode, Globe, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { QRCodeDisplay } from "@/components/menu/qr-code";
@@ -9,6 +11,10 @@ import { QRCodeDisplay } from "@/components/menu/qr-code";
 export default async function OnlineSiparisPage() {
   const session = await auth();
   if (!session?.user.organizationId) return null;
+
+  if (!hasFeature((session.user.plan ?? "STARTER") as PlanType, "online-order")) {
+    return <div className="flex flex-col h-full"><Topbar title="Online Sipariş" subtitle="QR menü ve online sipariş yönetimi" /><PlanGate feature="online-order" /></div>;
+  }
 
   const org = await db.organization.findUnique({
     where: { id: session.user.organizationId },

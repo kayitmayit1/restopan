@@ -6,7 +6,29 @@ export const PLAN_LIMITS = {
   ENTERPRISE: { tables: Infinity, members: Infinity, locations: Infinity },
 } as const;
 
-type PlanType = keyof typeof PLAN_LIMITS;
+// Features unlocked per plan (cumulative — each plan includes all previous)
+export const PLAN_FEATURES = {
+  STARTER: [
+    "pos", "tables", "kds", "orders", "menu",
+    "reservations", "staff", "inventory", "notifications",
+  ],
+  PROFESSIONAL: [
+    "pos", "tables", "kds", "orders", "menu",
+    "reservations", "staff", "inventory", "notifications",
+    "analytics", "finance", "kasa", "online-order",
+    "campaigns", "customers", "suppliers",
+  ],
+  ENTERPRISE: ["*"],
+} as const;
+
+export type PlanType = keyof typeof PLAN_LIMITS;
+export type PlanFeature = string;
+
+export function hasFeature(plan: PlanType, feature: PlanFeature): boolean {
+  const features = PLAN_FEATURES[plan] as readonly string[];
+  return features.includes("*") || features.includes(feature);
+}
+
 type LimitKey = keyof (typeof PLAN_LIMITS)["STARTER"];
 
 export async function checkLimit(

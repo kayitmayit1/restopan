@@ -2,11 +2,17 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Topbar } from "@/components/layout/topbar";
 import { AnalyticsClient } from "@/components/dashboard/analytics-client";
+import { hasFeature, type PlanType } from "@/lib/plan-limits";
+import { PlanGate } from "@/components/layout/plan-gate";
 import { subDays, startOfDay, endOfDay } from "date-fns";
 
 export default async function AnalitikPage() {
   const session = await auth();
   if (!session?.user.organizationId) return null;
+
+  if (!hasFeature((session.user.plan ?? "STARTER") as PlanType, "analytics")) {
+    return <div className="flex flex-col h-full"><Topbar title="Analitik" subtitle="Satış ve performans verileri" /><PlanGate feature="analytics" /></div>;
+  }
 
   const today = new Date();
   const locationFilter = session.user.locationId

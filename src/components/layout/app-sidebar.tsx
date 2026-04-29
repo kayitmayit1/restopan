@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, ShoppingCart, UtensilsCrossed, LayoutGrid, ChefHat,
   BookOpen, Package, Users, Calendar, BarChart3, DollarSign, Globe,
-  Truck, Tag, Settings, ChevronDown, Store, Bell, LogOut, Vault, ClipboardList,
+  Truck, Tag, Settings, ChevronDown, Store, Bell, LogOut, Vault, ClipboardList, Lock,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import {
 import { getInitials } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
+import { hasFeature, type PlanType } from "@/lib/plan-limits";
 
 type Role = "OWNER" | "ADMIN" | "MANAGER" | "CASHIER" | "WAITER" | "KITCHEN" | "STAFF";
 
@@ -24,7 +25,8 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
-  roles?: Role[]; // undefined = all roles
+  roles?: Role[];
+  feature?: string; // undefined = available on all plans
 }
 
 interface NavSection {
@@ -43,45 +45,45 @@ const navigation: NavSection[] = [
     title: "Genel Bakış",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: MANAGEMENT },
-      { label: "Bildirimler", href: "/dashboard/bildirimler", icon: Bell, roles: ALL },
+      { label: "Bildirimler", href: "/dashboard/bildirimler", icon: Bell, roles: ALL, feature: "notifications" },
     ],
   },
   {
     title: "Operasyon",
     items: [
-      { label: "POS Sistemi", href: "/dashboard/pos", icon: ShoppingCart, roles: FLOOR },
-      { label: "Siparişler", href: "/dashboard/siparisler", icon: UtensilsCrossed, roles: ALL },
-      { label: "Masa Planı", href: "/dashboard/masalar", icon: LayoutGrid, roles: FLOOR },
-      { label: "Mutfak (KDS)", href: "/dashboard/mutfak", icon: ChefHat, roles: ["OWNER", "ADMIN", "MANAGER", "KITCHEN"] },
-      { label: "Rezervasyonlar", href: "/dashboard/rezervasyonlar", icon: Calendar, roles: FLOOR },
-      { label: "Kasa", href: "/dashboard/kasa", icon: Vault, roles: SENIOR },
+      { label: "POS Sistemi", href: "/dashboard/pos", icon: ShoppingCart, roles: FLOOR, feature: "pos" },
+      { label: "Siparişler", href: "/dashboard/siparisler", icon: UtensilsCrossed, roles: ALL, feature: "orders" },
+      { label: "Masa Planı", href: "/dashboard/masalar", icon: LayoutGrid, roles: FLOOR, feature: "tables" },
+      { label: "Mutfak (KDS)", href: "/dashboard/mutfak", icon: ChefHat, roles: ["OWNER", "ADMIN", "MANAGER", "KITCHEN"], feature: "kds" },
+      { label: "Rezervasyonlar", href: "/dashboard/rezervasyonlar", icon: Calendar, roles: FLOOR, feature: "reservations" },
+      { label: "Kasa", href: "/dashboard/kasa", icon: Vault, roles: SENIOR, feature: "kasa" },
     ],
   },
   {
     title: "Yönetim",
     roles: MANAGEMENT,
     items: [
-      { label: "Menü", href: "/dashboard/menu", icon: BookOpen, roles: MANAGEMENT },
-      { label: "Stok & Envanter", href: "/dashboard/envanter", icon: Package, roles: MANAGEMENT },
-      { label: "Tedarikçiler", href: "/dashboard/tedarikciler", icon: Truck, roles: MANAGEMENT },
-      { label: "Personel", href: "/dashboard/personel", icon: Users, roles: MANAGEMENT },
-      { label: "Müşteriler", href: "/dashboard/musteriler", icon: Users, roles: SENIOR },
+      { label: "Menü", href: "/dashboard/menu", icon: BookOpen, roles: MANAGEMENT, feature: "menu" },
+      { label: "Stok & Envanter", href: "/dashboard/envanter", icon: Package, roles: MANAGEMENT, feature: "inventory" },
+      { label: "Tedarikçiler", href: "/dashboard/tedarikciler", icon: Truck, roles: MANAGEMENT, feature: "suppliers" },
+      { label: "Personel", href: "/dashboard/personel", icon: Users, roles: MANAGEMENT, feature: "staff" },
+      { label: "Müşteriler", href: "/dashboard/musteriler", icon: Users, roles: SENIOR, feature: "customers" },
     ],
   },
   {
     title: "Büyüme",
     roles: MANAGEMENT,
     items: [
-      { label: "Online Sipariş", href: "/dashboard/online-siparis", icon: Globe, roles: MANAGEMENT },
-      { label: "Kampanyalar", href: "/dashboard/kampanyalar", icon: Tag, roles: MANAGEMENT },
+      { label: "Online Sipariş", href: "/dashboard/online-siparis", icon: Globe, roles: MANAGEMENT, feature: "online-order" },
+      { label: "Kampanyalar", href: "/dashboard/kampanyalar", icon: Tag, roles: MANAGEMENT, feature: "campaigns" },
     ],
   },
   {
     title: "Raporlar",
     roles: MANAGEMENT,
     items: [
-      { label: "Analitik", href: "/dashboard/analitik", icon: BarChart3, roles: MANAGEMENT },
-      { label: "Finans", href: "/dashboard/finans", icon: DollarSign, roles: MANAGEMENT },
+      { label: "Analitik", href: "/dashboard/analitik", icon: BarChart3, roles: MANAGEMENT, feature: "analytics" },
+      { label: "Finans", href: "/dashboard/finans", icon: DollarSign, roles: MANAGEMENT, feature: "finance" },
     ],
   },
   {
@@ -101,7 +103,7 @@ function hasRole(role: Role | undefined, allowed: Role[] | undefined): boolean {
   return allowed.includes(role);
 }
 
-export function AppSidebar() {
+export function AppSidebar({ plan = "STARTER" }: { plan?: PlanType }) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
@@ -157,6 +159,23 @@ export function AppSidebar() {
               <div className="mt-0.5 space-y-0.5 px-2">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  const locked = item.feature ? !hasFeature(plan, item.feature) : false;
+
+                  if (locked) {
+                    return (
+                      <Link
+                        key={item.href}
+                        href="/dashboard/ayarlar/fatura"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/30 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground/50 transition-all group"
+                        title="Bu özellik Professional plana dahildir"
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="flex-1">{item.label}</span>
+                        <Lock className="w-3 h-3 flex-shrink-0 opacity-50 group-hover:opacity-80" />
+                      </Link>
+                    );
+                  }
+
                   return (
                     <Link key={item.href} href={item.href}
                       className={cn(

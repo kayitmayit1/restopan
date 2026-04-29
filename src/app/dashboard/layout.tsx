@@ -54,7 +54,7 @@ export default async function DashboardLayout({
       {gateReason && (
         <SubscriptionGate reason={gateReason} planName={org?.plan ?? "STARTER"} />
       )}
-      <AppSidebar />
+      <AppSidebar plan={(org?.plan ?? "STARTER") as "STARTER" | "PROFESSIONAL" | "ENTERPRISE"} />
       <div className="flex-1 flex flex-col overflow-hidden">
         {trialBanner && (
           <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between shrink-0">

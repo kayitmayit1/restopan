@@ -67,8 +67,9 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
   const [currency, setCurrency] = useState("TRY");
   const [taxRate, setTaxRate] = useState(10);
 
-  // Step 1 — Masalar
-  const [tableCount, setTableCount] = useState(10);
+  // Step 1 — Masalar (Starter plan: max 10)
+  const TABLE_LIMIT = 10;
+  const [tableCount, setTableCount] = useState(5);
   const [tablePrefix, setTablePrefix] = useState("Masa");
   const [tableCapacity, setTableCapacity] = useState(4);
 
@@ -309,12 +310,12 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="text-2xl font-bold w-12 text-center tabular-nums">{tableCount}</span>
-                    <button type="button" onClick={() => setTableCount(Math.min(200, tableCount + 1))}
+                    <button type="button" onClick={() => setTableCount(Math.min(TABLE_LIMIT, tableCount + 1))}
                       className="w-10 h-10 rounded-xl border flex items-center justify-center hover:bg-muted transition-colors">
                       <Plus className="w-4 h-4" />
                     </button>
                     <div className="flex gap-2 ml-2">
-                      {[5, 10, 20, 30].map((n) => (
+                      {[3, 5, 8, 10].map((n) => (
                         <button key={n} type="button" onClick={() => setTableCount(n)}
                           className={cn("px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
                             tableCount === n ? "bg-primary text-white border-primary" : "hover:bg-muted")}>
@@ -323,6 +324,9 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
                       ))}
                     </div>
                   </div>
+                  <p className="text-xs text-amber-600 font-medium">
+                    Ücretsiz planda maksimum {TABLE_LIMIT} masa — daha fazlası için Professional plana geç.
+                  </p>
                 </div>
 
                 <div className="space-y-2">

@@ -61,6 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.organizationSlug = membership.organization.slug;
           token.role = membership.role;
           token.locationId = membership.locationId ?? undefined;
+          token.plan = membership.organization.plan;
         }
       }
       return token;
@@ -72,6 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.organizationSlug = token.organizationSlug as string | undefined;
         session.user.role = token.role as MemberRole | undefined;
         session.user.locationId = token.locationId as string | undefined;
+        session.user.plan = token.plan as string | undefined;
       }
       return session;
     },

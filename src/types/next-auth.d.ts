@@ -12,6 +12,7 @@ declare module "next-auth" {
       organizationSlug?: string;
       role?: MemberRole;
       locationId?: string;
+      plan?: string;
     };
   }
 }

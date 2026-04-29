@@ -10,7 +10,7 @@ const schema = z.object({
   currency: z.string().default("TRY"),
   taxRate: z.number().min(0).max(100).default(10),
   businessType: z.string().optional(),
-  tableCount: z.number().min(0).max(200),
+  tableCount: z.number().min(0).max(10), // Starter plan limit
   tablePrefix: z.string().default("Masa"),
   tableCapacity: z.number().default(4),
 });

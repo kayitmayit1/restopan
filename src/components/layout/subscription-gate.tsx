@@ -29,7 +29,7 @@ export function SubscriptionGate({ reason }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
   const msg = MESSAGES[reason];
 
-  async function handleUpgrade(plan: "PROFESSIONAL" | "ENTERPRISE") {
+  async function handleUpgrade(plan: "PROFESSIONAL") {
     setLoading(plan);
     try {
       const res = await fetch("/api/billing/checkout", {
@@ -60,15 +60,19 @@ export function SubscriptionGate({ reason }: Props) {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="border rounded-2xl p-5 text-left space-y-3">
+          <div className="border-2 border-primary rounded-2xl p-5 text-left space-y-3 relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="bg-primary text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">En Popüler</span>
+            </div>
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-primary" />
               <span className="font-semibold">Professional</span>
             </div>
-            <p className="text-2xl font-bold">₺999<span className="text-sm font-normal text-muted-foreground">/ay</span></p>
+            <p className="text-2xl font-bold">₺799<span className="text-sm font-normal text-muted-foreground">/ay</span></p>
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>50 masa · 10 kullanıcı</li>
               <li>3 şube · Tüm özellikler</li>
+              <li>WhatsApp destek (09:00–22:00)</li>
             </ul>
             <Button
               className="w-full"
@@ -81,28 +85,24 @@ export function SubscriptionGate({ reason }: Props) {
             </Button>
           </div>
 
-          <div className="border-2 border-primary rounded-2xl p-5 text-left space-y-3 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-primary text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">Sınırsız</span>
-            </div>
+          <div className="border rounded-2xl p-5 text-left space-y-3">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-violet-600" />
               <span className="font-semibold">Enterprise</span>
             </div>
-            <p className="text-2xl font-bold">₺2.499<span className="text-sm font-normal text-muted-foreground">/ay</span></p>
+            <p className="text-xl font-bold text-violet-600">Size özel</p>
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>Sınırsız masa & kullanıcı</li>
-              <li>Öncelikli destek</li>
+              <li>30 dk yanıt · Yerinde eğitim</li>
             </ul>
             <Button
               className="w-full"
               size="sm"
               variant="outline"
-              onClick={() => handleUpgrade("ENTERPRISE")}
+              onClick={() => window.location.href = "mailto:satis@restopan.com"}
               disabled={!!loading}
             >
-              {loading === "ENTERPRISE" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-              Seç
+              Teklif Alın
             </Button>
           </div>
         </div>
