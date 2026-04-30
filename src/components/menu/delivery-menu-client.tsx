@@ -10,6 +10,7 @@ import {
   Phone, MapPin, User, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 
 interface CartItem {
   menuItemId: string;
@@ -54,6 +55,7 @@ export function DeliveryMenuClient({ organization, categories, locationId, deliv
   function proceedToMenu() {
     if (!deliveryName.trim()) { toast.error("Ad Soyad gerekli"); return; }
     if (!deliveryPhone.trim()) { toast.error("Telefon numarası gerekli"); return; }
+    if (!isValidTurkishPhone(deliveryPhone)) { toast.error(PHONE_ERROR); return; }
     if (!deliveryAddress.trim()) { toast.error("Teslimat adresi gerekli"); return; }
     setStep("menu");
   }

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, User, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { getInitials } from "@/lib/utils";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 
 interface Props {
   user: {
@@ -33,6 +34,7 @@ export function ProfileClient({ user: initial }: Props) {
 
   async function saveInfo() {
     if (!name.trim()) { toast.error("Ad soyad boş olamaz"); return; }
+    if (phone && !isValidTurkishPhone(phone)) { toast.error(PHONE_ERROR); return; }
     setSavingInfo(true);
     try {
       const res = await fetch("/api/user", {
@@ -102,7 +104,7 @@ export function ProfileClient({ user: initial }: Props) {
             </div>
             <div className="space-y-2">
               <Label>Telefon</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+90 536 773 62 42" />
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" />
             </div>
             <div className="space-y-2">
               <Label>E-posta</Label>

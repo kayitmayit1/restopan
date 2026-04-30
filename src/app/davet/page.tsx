@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,6 @@ interface InviteInfo {
 
 function DavetContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const token = searchParams.get("token") ?? "";
 
   const [status, setStatus] = useState<"loading" | "ready" | "error" | "done">("loading");
@@ -59,7 +58,7 @@ function DavetContent() {
 
       await signIn("credentials", { email: invite!.email, password, redirect: false });
       setStatus("done");
-      setTimeout(() => router.push("/dashboard"), 1500);
+      setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "İşlem başarısız");
     } finally {
@@ -81,7 +80,7 @@ function DavetContent() {
           <AlertCircle className="w-10 h-10 text-destructive" />
           <p className="font-semibold">Davet Geçersiz</p>
           <p className="text-sm text-muted-foreground">{errorMsg}</p>
-          <Button variant="outline" size="sm" onClick={() => router.push("/giris")} className="mt-2">
+          <Button variant="outline" size="sm" onClick={() => { window.location.href = "/giris"; }} className="mt-2">
             Giriş Sayfasına Dön
           </Button>
         </div>

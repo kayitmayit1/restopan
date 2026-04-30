@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2 } from "lucide-react";
@@ -22,6 +23,7 @@ interface AddReservationModalProps {
 
 export function AddReservationModal({ locationId, tables, onClose, onSaved }: AddReservationModalProps) {
   const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
   const today = new Date().toISOString().slice(0, 16);
   const [form, setForm] = useState({
     guestName: "", guestPhone: "", guestEmail: "", guestCount: "2",
@@ -30,6 +32,11 @@ export function AddReservationModal({ locationId, tables, onClose, onSaved }: Ad
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (form.guestPhone && !isValidTurkishPhone(form.guestPhone)) {
+      setPhoneError(PHONE_ERROR);
+      return;
+    }
+    setPhoneError("");
     setLoading(true);
     try {
       const res = await fetch("/api/reservations", {
@@ -65,7 +72,13 @@ export function AddReservationModal({ locationId, tables, onClose, onSaved }: Ad
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Telefon</Label>
-              <Input value={form.guestPhone} onChange={(e) => setForm({ ...form, guestPhone: e.target.value })} />
+              <Input
+                value={form.guestPhone}
+                onChange={(e) => { setForm({ ...form, guestPhone: e.target.value }); setPhoneError(""); }}
+                onBlur={() => { if (form.guestPhone && !isValidTurkishPhone(form.guestPhone)) setPhoneError(PHONE_ERROR); }}
+                placeholder="05XX XXX XX XX"
+              />
+              {phoneError && <p className="text-xs text-destructive mt-1">{phoneError}</p>}
             </div>
             <div className="space-y-2">
               <Label>Kişi Sayısı</Label>

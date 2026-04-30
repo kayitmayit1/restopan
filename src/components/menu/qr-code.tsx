@@ -1,20 +1,39 @@
-"use client";
+import QRCode from "qrcode";
+import { Download } from "lucide-react";
 
-import { useEffect, useRef } from "react";
+interface QRCodeDisplayProps {
+  url: string;
+  label?: string;
+}
 
-export function QRCodeDisplay({ url }: { url: string }) {
+export async function QRCodeDisplay({ url, label }: QRCodeDisplayProps) {
+  const dataUrl = await QRCode.toDataURL(url, {
+    width: 256,
+    margin: 2,
+    color: { dark: "#111111", light: "#ffffff" },
+    errorCorrectionLevel: "M",
+  });
+
   return (
-    <div className="flex items-center justify-center">
-      <div className="w-48 h-48 bg-muted rounded-xl flex items-center justify-center border-2 border-dashed">
-        <div className="text-center space-y-2">
-          <div className="w-32 h-32 bg-foreground/10 rounded-lg mx-auto grid grid-cols-3 gap-1 p-2">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className={`rounded-sm ${[0,1,3,5,7,8,4].includes(i) ? "bg-foreground" : "bg-transparent"}`} />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">QR Kod</p>
-        </div>
+    <div className="flex flex-col items-center gap-3">
+      <div className="bg-white rounded-2xl p-4 border shadow-sm inline-flex">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={dataUrl}
+          alt={label ?? "QR Kod"}
+          width={192}
+          height={192}
+          className="rounded-lg"
+        />
       </div>
+      <a
+        href={dataUrl}
+        download={`qr-${label ?? "menu"}.png`}
+        className="inline-flex items-center gap-1.5 h-7 px-2.5 text-sm rounded-md border border-border bg-background hover:bg-muted transition-colors"
+      >
+        <Download className="w-3.5 h-3.5" />
+        İndir
+      </a>
     </div>
   );
 }

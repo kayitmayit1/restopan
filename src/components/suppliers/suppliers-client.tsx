@@ -11,6 +11,7 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { PurchaseOrderStatus } from "@prisma/client";
 import { Plus, Building2, Phone, Mail, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 
 const poStatusConfig: Record<PurchaseOrderStatus, { label: string; color: string }> = {
   DRAFT:     { label: "Taslak",      color: "text-gray-500" },
@@ -46,6 +47,7 @@ export function SuppliersClient({ suppliers: initialSuppliers, orders: initialOr
 
   async function handleAddSupplier(e: React.FormEvent) {
     e.preventDefault();
+    if (form.phone && !isValidTurkishPhone(form.phone)) { toast.error(PHONE_ERROR); return; }
     setLoading(true);
     try {
       const res = await fetch("/api/suppliers", {
@@ -108,7 +110,7 @@ export function SuppliersClient({ suppliers: initialSuppliers, orders: initialOr
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Telefon</Label>
-                      <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                      <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="05XX XXX XX XX" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">E-posta</Label>

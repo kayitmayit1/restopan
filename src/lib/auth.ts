@@ -49,7 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
       }
-      if (token.id && (user || trigger === "update" || !token.organizationId)) {
+      if (token.id && (user || trigger === "update" || !token.organizationId || !token.role)) {
         try {
           const membership = await db.organizationMember.findFirst({
             where: { userId: token.id as string },

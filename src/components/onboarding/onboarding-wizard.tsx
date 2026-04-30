@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 import {
   ChefHat, Building2, LayoutGrid, BookOpen,
   ArrowRight, Check, Loader2, Minus, Plus,
@@ -77,6 +78,7 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
   const [menuTemplate, setMenuTemplate] = useState<string | null>(null);
 
   async function handleFinish() {
+    if (phone && !isValidTurkishPhone(phone)) { toast.error(PHONE_ERROR); return; }
     setLoading(true);
     try {
       const res = await fetch("/api/onboarding", {
@@ -230,7 +232,7 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
                   <Label>Telefon</Label>
                   <Input
                     type="tel"
-                    placeholder="0212 000 00 00"
+                    placeholder="05XX XXX XX XX"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />

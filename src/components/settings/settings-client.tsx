@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, MapPin, Globe, Bell, Plus, Loader2, Sun, Moon, Bike } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 
 interface Organization {
   id: string; name: string; slug: string; currency: string; timezone: string;
@@ -41,6 +42,7 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
   const [addingLoc, setAddingLoc] = useState(false);
 
   async function saveOrg() {
+    if (org.phone && !isValidTurkishPhone(org.phone)) { toast.error(PHONE_ERROR); return; }
     setSaving(true);
     try {
       await fetch(`/api/organizations/${org.id}`, {
@@ -118,7 +120,7 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
                 </div>
                 <div className="space-y-2">
                   <Label>Telefon</Label>
-                  <Input value={org.phone || ""} onChange={(e) => setOrg({ ...org, phone: e.target.value })} />
+                  <Input value={org.phone || ""} onChange={(e) => setOrg({ ...org, phone: e.target.value })} placeholder="05XX XXX XX XX" />
                 </div>
                 <div className="space-y-2">
                   <Label>E-posta</Label>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
 
 interface SavedCustomer {
   id: string; name: string; email?: string | null; phone?: string | null;
@@ -19,9 +20,15 @@ export function AddCustomerModal({ organizationId, onClose, onSaved }: {
 }) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", birthdate: "", notes: "" });
+  const [phoneError, setPhoneError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (form.phone && !isValidTurkishPhone(form.phone)) {
+      setPhoneError(PHONE_ERROR);
+      return;
+    }
+    setPhoneError("");
     setLoading(true);
     try {
       const res = await fetch("/api/customers", {
@@ -52,7 +59,13 @@ export function AddCustomerModal({ organizationId, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Telefon</Label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="05xx..." />
+              <Input
+                value={form.phone}
+                onChange={(e) => { setForm({ ...form, phone: e.target.value }); setPhoneError(""); }}
+                onBlur={() => { if (form.phone && !isValidTurkishPhone(form.phone)) setPhoneError(PHONE_ERROR); }}
+                placeholder="05XX XXX XX XX"
+              />
+              {phoneError && <p className="text-xs text-destructive">{phoneError}</p>}
             </div>
             <div className="space-y-2">
               <Label>Doğum Tarihi</Label>
