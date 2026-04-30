@@ -4,7 +4,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasFeature, type PlanType } from "@/lib/plan-limits";
 import { PlanGate } from "@/components/layout/plan-gate";
-import { QrCode, Globe, ExternalLink } from "lucide-react";
+import { QrCode, Globe, ExternalLink, Bike } from "lucide-react";
 import Link from "next/link";
 import { QRCodeDisplay } from "@/components/menu/qr-code";
 
@@ -22,6 +22,7 @@ export default async function OnlineSiparisPage() {
   });
 
   const menuUrl = `${process.env.NEXT_PUBLIC_APP_URL}/menu/${org?.slug}`;
+  const deliveryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/siparis/${org?.slug}`;
 
   return (
     <div>
@@ -52,20 +53,27 @@ export default async function OnlineSiparisPage() {
           <Card className="border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Globe className="w-5 h-5 text-primary" />Online Sipariş
+                <Bike className="w-5 h-5 text-primary" />Kurye / Teslimat Siparişi
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Müşterileriniz web tarayıcısından menüyü görüntüleyip sipariş verebilir.
+                Müşteriler bu link üzerinden adreslerini girerek kurye siparişi verebilir. Ödeme kapıda nakit yapılır.
               </p>
-              <div className="space-y-3">
+              <p className="text-xs text-muted-foreground font-mono bg-muted px-3 py-2 rounded-lg break-all">{deliveryUrl}</p>
+              <div className="flex gap-2">
+                <Link href={deliveryUrl} target="_blank"
+                  className="inline-flex items-center gap-1.5 h-7 px-2.5 text-sm rounded-md border border-border bg-background hover:bg-muted transition-colors">
+                  <ExternalLink className="w-3.5 h-3.5" />Önizle
+                </Link>
+              </div>
+              <div className="space-y-2">
                 {[
-                  { label: "Masada Sipariş", desc: "QR kod ile masa başından sipariş" },
-                  { label: "Paket Sipariş", desc: "Online paket siparişi alın" },
-                  { label: "Teslimat", desc: "Kurye entegrasyonu (yakında)" },
+                  { label: "Ad, telefon, adres girişi", desc: "Müşteri teslimat bilgilerini girer" },
+                  { label: "Online sipariş", desc: "Menüden ürün seçer ve onaylar" },
+                  { label: "Otomatik bildirim", desc: "Sipariş anlık sisteme düşer" },
                 ].map((f) => (
-                  <div key={f.label} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div key={f.label} className="flex items-center gap-3 p-2.5 bg-muted/50 rounded-lg">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium">{f.label}</p>

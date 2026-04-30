@@ -28,6 +28,9 @@ interface POSState {
   discount: number;
   discountType: "PERCENTAGE" | "FIXED";
   notes: string;
+  deliveryName: string;
+  deliveryPhone: string;
+  deliveryAddress: string;
 
   addItem: (item: Omit<CartItem, "id">) => void;
   removeItem: (id: string) => void;
@@ -38,6 +41,7 @@ interface POSState {
   setOrderType: (type: POSState["orderType"]) => void;
   setDiscount: (amount: number, type: POSState["discountType"]) => void;
   setNotes: (notes: string) => void;
+  setDeliveryInfo: (name: string, phone: string, address: string) => void;
   clearCart: () => void;
 
   subtotal: () => number;
@@ -55,6 +59,9 @@ export const usePOSStore = create<POSState>()(
       discount: 0,
       discountType: "PERCENTAGE",
       notes: "",
+      deliveryName: "",
+      deliveryPhone: "",
+      deliveryAddress: "",
 
       addItem: (item) => {
         const { cart } = get();
@@ -97,6 +104,7 @@ export const usePOSStore = create<POSState>()(
       setOrderType: (type) => set({ orderType: type }),
       setDiscount: (amount, type) => set({ discount: amount, discountType: type }),
       setNotes: (notes) => set({ notes }),
+      setDeliveryInfo: (name, phone, address) => set({ deliveryName: name, deliveryPhone: phone, deliveryAddress: address }),
       clearCart: () =>
         set({
           cart: [],
@@ -104,6 +112,9 @@ export const usePOSStore = create<POSState>()(
           selectedCustomerId: null,
           discount: 0,
           notes: "",
+          deliveryName: "",
+          deliveryPhone: "",
+          deliveryAddress: "",
         }),
 
       subtotal: () => {
@@ -135,6 +146,9 @@ export const usePOSStore = create<POSState>()(
         discount: s.discount,
         discountType: s.discountType,
         notes: s.notes,
+        deliveryName: s.deliveryName,
+        deliveryPhone: s.deliveryPhone,
+        deliveryAddress: s.deliveryAddress,
       }),
     }
   )

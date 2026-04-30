@@ -34,7 +34,7 @@ const METHODS = [
 ];
 
 export function PaymentModal({ onClose, organizationId, locationId, staffId }: PaymentModalProps) {
-  const { cart, total, discountAmount, subtotal, selectedTableId, orderType, notes, clearCart } =
+  const { cart, total, discountAmount, subtotal, selectedTableId, orderType, notes, clearCart, deliveryName, deliveryPhone, deliveryAddress } =
     usePOSStore();
 
   const [method, setMethod] = useState<PaymentMethod>("CASH");
@@ -72,6 +72,9 @@ export function PaymentModal({ onClose, organizationId, locationId, staffId }: P
         staffId,
         type: orderType,
         notes,
+        deliveryName: orderType === "DELIVERY" ? deliveryName : undefined,
+        deliveryPhone: orderType === "DELIVERY" ? deliveryPhone : undefined,
+        deliveryAddress: orderType === "DELIVERY" ? deliveryAddress : undefined,
         items: cart.map((item) => ({
           menuItemId: item.menuItemId,
           quantity: item.quantity,

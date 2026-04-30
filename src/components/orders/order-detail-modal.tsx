@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, Printer, Loader2 } from "lucide-react";
+import { X, Printer, Loader2, Bike, Phone, MapPin, User } from "lucide-react";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { OrderStatus, PaymentStatus, OrderType } from "@prisma/client";
 import { toast } from "sonner";
@@ -21,6 +21,10 @@ interface Order {
   taxAmount?: number;
   discountAmount?: number;
   notes?: string | null;
+  deliveryName?: string | null;
+  deliveryPhone?: string | null;
+  deliveryAddress?: string | null;
+  deliveryFee?: number | null;
   createdAt: Date;
   table: { name: string } | null;
   customer: { name: string; phone?: string | null } | null;
@@ -58,6 +62,12 @@ const ACTIVE_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
   PREPARING: ["READY", "CANCELLED"],
   READY:     ["SERVED", "COMPLETED"],
   SERVED:    ["COMPLETED"],
+};
+
+const DELIVERY_STATUS_LABELS: Partial<Record<OrderStatus, string>> = {
+  READY:     "Yola Çıktı",
+  SERVED:    "Yolda",
+  COMPLETED: "Teslim Edildi",
 };
 
 export function OrderDetailModal({
@@ -115,18 +125,25 @@ export function OrderDetailModal({
           {/* Status badge */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className={cn("text-xs px-3 py-1 rounded-full font-semibold", statusConfig[order.status].color)}>
-              {statusConfig[order.status].label}
+              {order.type === "DELIVERY" && DELIVERY_STATUS_LABELS[order.status]
+                ? DELIVERY_STATUS_LABELS[order.status]
+                : statusConfig[order.status].label}
             </span>
-            {transitions.length > 0 && transitions.map((s) => (
-              <button
-                key={s}
-                disabled={updating}
-                onClick={() => updateStatus(s)}
-                className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors font-medium disabled:opacity-50"
-              >
-                {updating ? <Loader2 className="w-3 h-3 animate-spin" /> : `→ ${statusConfig[s].label}`}
-              </button>
-            ))}
+            {transitions.length > 0 && transitions.map((s) => {
+              const label = order.type === "DELIVERY" && DELIVERY_STATUS_LABELS[s]
+                ? DELIVERY_STATUS_LABELS[s]!
+                : statusConfig[s].label;
+              return (
+                <button
+                  key={s}
+                  disabled={updating}
+                  onClick={() => updateStatus(s)}
+                  className="text-xs px-3 py-1 rounded-full border border-border hover:bg-muted transition-colors font-medium disabled:opacity-50"
+                >
+                  {updating ? <Loader2 className="w-3 h-3 animate-spin" /> : `→ ${label}`}
+                </button>
+              );
+            })}
           </div>
 
           {/* Info */}
@@ -134,7 +151,7 @@ export function OrderDetailModal({
             <div className="bg-muted rounded-lg p-3">
               <p className="text-xs text-muted-foreground">Tür</p>
               <p className="font-medium">
-                {order.type === "DINE_IN" ? "Masada" : order.type === "TAKEOUT" ? "Paket" : "Kurye"}
+                {order.type === "DINE_IN" ? "Masada" : order.type === "TAKEOUT" ? "Paket" : order.type === "DELIVERY" ? "Kurye" : "Online"}
               </p>
             </div>
             {order.table && (
@@ -153,6 +170,37 @@ export function OrderDetailModal({
               </div>
             )}
           </div>
+
+          {/* Delivery info */}
+          {order.type === "DELIVERY" && order.deliveryName && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-orange-700 mb-1">
+                <Bike className="w-3.5 h-3.5" />Kurye Teslimat Bilgileri
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <User className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                <span className="font-medium">{order.deliveryName}</span>
+              </div>
+              {order.deliveryPhone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                  <a href={`tel:${order.deliveryPhone}`} className="text-orange-700 underline">{order.deliveryPhone}</a>
+                </div>
+              )}
+              {order.deliveryAddress && (
+                <div className="flex items-start gap-2 text-sm">
+                  <MapPin className="w-3.5 h-3.5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span>{order.deliveryAddress}</span>
+                </div>
+              )}
+              {order.deliveryFee != null && order.deliveryFee > 0 && (
+                <div className="flex items-center justify-between text-sm border-t border-orange-200 pt-2 mt-1">
+                  <span className="text-orange-700">Teslimat Ücreti</span>
+                  <span className="font-semibold text-orange-700">{formatCurrency(order.deliveryFee)}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Items */}
           <div>

@@ -14,6 +14,7 @@ import {
   Tag,
   ChevronDown,
   ArrowRightLeft,
+  Bike,
 } from "lucide-react";
 import { TableStatus } from "@prisma/client";
 import { useState } from "react";
@@ -48,6 +49,10 @@ export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activ
     orderType,
     notes,
     setNotes,
+    deliveryName,
+    deliveryPhone,
+    deliveryAddress,
+    setDeliveryInfo,
   } = usePOSStore();
 
   const [showDiscount, setShowDiscount] = useState(false);
@@ -190,6 +195,34 @@ export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activ
               <span className="text-primary">{formatCurrency(tot)}</span>
             </div>
           </div>
+
+          {/* Delivery Info */}
+          {orderType === "DELIVERY" && (
+            <div className="space-y-1.5 p-3 bg-orange-50 rounded-xl border border-orange-200">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-orange-700 mb-2">
+                <Bike className="w-3.5 h-3.5" />
+                Kurye Bilgileri
+              </div>
+              <Input
+                placeholder="Alıcı adı *"
+                value={deliveryName}
+                onChange={(e) => setDeliveryInfo(e.target.value, deliveryPhone, deliveryAddress)}
+                className="h-8 text-xs"
+              />
+              <Input
+                placeholder="Telefon *"
+                value={deliveryPhone}
+                onChange={(e) => setDeliveryInfo(deliveryName, e.target.value, deliveryAddress)}
+                className="h-8 text-xs"
+              />
+              <Input
+                placeholder="Teslimat adresi *"
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryInfo(deliveryName, deliveryPhone, e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+          )}
 
           {/* Discount Toggle */}
           <button

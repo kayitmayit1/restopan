@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Building2, MapPin, Globe, Bell, Plus, Loader2, Sun, Moon } from "lucide-react";
+import { Building2, MapPin, Globe, Bell, Plus, Loader2, Sun, Moon, Bike } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -19,6 +19,9 @@ interface Organization {
   locale: string; taxRate: number; taxIncluded: boolean; address?: string | null;
   phone?: string | null; email?: string | null; website?: string | null;
   plan: string;
+  deliveryMinOrder?: number | null;
+  deliveryFee?: number | null;
+  deliveryZone?: string | null;
 }
 interface Location {
   id: string; name: string; address?: string | null; phone?: string | null;
@@ -95,6 +98,7 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
         <TabsList>
           <TabsTrigger value="general"><Building2 className="w-3.5 h-3.5 mr-1.5" />Genel</TabsTrigger>
           <TabsTrigger value="locations"><MapPin className="w-3.5 h-3.5 mr-1.5" />Şubeler</TabsTrigger>
+          <TabsTrigger value="delivery"><Bike className="w-3.5 h-3.5 mr-1.5" />Teslimat</TabsTrigger>
           <TabsTrigger value="preferences"><Globe className="w-3.5 h-3.5 mr-1.5" />Tercihler</TabsTrigger>
           <TabsTrigger value="notifications"><Bell className="w-3.5 h-3.5 mr-1.5" />Bildirimler</TabsTrigger>
         </TabsList>
@@ -185,6 +189,53 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="delivery" className="mt-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Teslimat Ayarları</CardTitle>
+              <p className="text-sm text-muted-foreground">Bu ayarlar müşteri kurye sipariş sayfasında uygulanır.</p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Minimum Sipariş Tutarı (₺)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="0 — limit yok"
+                    value={org.deliveryMinOrder ?? ""}
+                    onChange={(e) => setOrg({ ...org, deliveryMinOrder: e.target.value ? parseFloat(e.target.value) : null })}
+                  />
+                  <p className="text-xs text-muted-foreground">Boş bırakırsanız minimum tutar uygulanmaz.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Teslimat Ücreti (₺)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="0 — ücretsiz"
+                    value={org.deliveryFee ?? ""}
+                    onChange={(e) => setOrg({ ...org, deliveryFee: e.target.value ? parseFloat(e.target.value) : null })}
+                  />
+                  <p className="text-xs text-muted-foreground">0 veya boş bırakırsanız ücretsiz gösterilir.</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Teslimat Bölgesi</Label>
+                <Input
+                  placeholder="Örn: Kadıköy, Üsküdar, Ataşehir mahallelerine teslimat yapılmaktadır."
+                  value={org.deliveryZone ?? ""}
+                  onChange={(e) => setOrg({ ...org, deliveryZone: e.target.value || null })}
+                />
+                <p className="text-xs text-muted-foreground">Müşteriye sipariş sayfasında gösterilir. Teslimat yapılmayan bölgelerden sipariş geldiğinde müşteri uyarılmaz — bunu yazıyla belirtebilirsiniz.</p>
+              </div>
+              <Button onClick={saveOrg} disabled={saving}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Kaydet
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="preferences" className="mt-4 space-y-4">

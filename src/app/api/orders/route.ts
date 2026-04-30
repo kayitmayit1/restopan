@@ -12,6 +12,9 @@ const orderSchema = z.object({
   staffId: z.string().optional(),
   type: z.enum(["DINE_IN", "TAKEOUT", "DELIVERY", "ONLINE"]).default("DINE_IN"),
   notes: z.string().optional(),
+  deliveryName: z.string().optional(),
+  deliveryPhone: z.string().optional(),
+  deliveryAddress: z.string().optional(),
   items: z.array(
     z.object({
       menuItemId: z.string(),
@@ -73,6 +76,9 @@ export async function POST(req: NextRequest) {
         discountAmount: data.discountAmount,
         totalAmount: data.totalAmount,
         notes: data.notes,
+        deliveryName: data.deliveryName,
+        deliveryPhone: data.deliveryPhone,
+        deliveryAddress: data.deliveryAddress,
         source: "POS",
         items: {
           create: data.items.map((item) => ({

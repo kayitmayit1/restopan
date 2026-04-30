@@ -8,7 +8,12 @@ const schema = z.object({
   organizationId: z.string(),
   locationId: z.string(),
   tableId: z.string().optional().nullable(),
+  type: z.enum(["DINE_IN", "DELIVERY"]).default("DINE_IN"),
   customerName: z.string().optional(),
+  deliveryName: z.string().optional(),
+  deliveryPhone: z.string().optional(),
+  deliveryAddress: z.string().optional(),
+  deliveryFee: z.number().default(0),
   notes: z.string().optional(),
   items: z.array(z.object({
     menuItemId: z.string(),
@@ -36,7 +41,7 @@ export async function POST(req: NextRequest) {
       locationId: data.locationId,
       tableId: data.tableId ?? null,
       orderNumber,
-      type: "DINE_IN",
+      type: data.type,
       status: "CONFIRMED",
       paymentStatus: "UNPAID",
       subtotal: data.subtotal,
@@ -44,6 +49,10 @@ export async function POST(req: NextRequest) {
       discountAmount: 0,
       totalAmount: data.totalAmount,
       notes: data.notes ?? null,
+      deliveryName: data.deliveryName ?? null,
+      deliveryPhone: data.deliveryPhone ?? null,
+      deliveryAddress: data.deliveryAddress ?? null,
+      deliveryFee: data.deliveryFee,
       source: "ONLINE",
       items: {
         create: data.items.map((item) => ({
@@ -67,7 +76,7 @@ export async function POST(req: NextRequest) {
   broadcast(data.organizationId, "order:new", {
     id: order.id,
     orderNumber: order.orderNumber,
-    type: "DINE_IN",
+    type: data.type,
     tableId: order.tableId,
     totalAmount: order.totalAmount,
     itemCount: data.items.reduce((s, i) => s + i.quantity, 0),

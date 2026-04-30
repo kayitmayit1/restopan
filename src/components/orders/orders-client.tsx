@@ -47,6 +47,10 @@ interface Order {
   customer: { name: string; phone?: string | null } | null;
   items: Array<{ menuItem: { name: string } }>;
   receipt: { payments: Array<{ method: string; amount: number }> } | null;
+  deliveryName?: string | null;
+  deliveryPhone?: string | null;
+  deliveryAddress?: string | null;
+  deliveryFee?: number | null;
 }
 
 export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
@@ -175,7 +179,13 @@ export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
                     <td className="px-4 py-3">
                       <div>
                         {order.table && <p className="font-medium">{order.table.name}</p>}
+                        {order.type === "DELIVERY" && order.deliveryName && (
+                          <p className="font-medium text-orange-700">{order.deliveryName}</p>
+                        )}
                         <p className="text-xs text-muted-foreground">{typeLabels[order.type]}</p>
+                        {order.type === "DELIVERY" && order.deliveryAddress && (
+                          <p className="text-xs text-muted-foreground truncate max-w-32">{order.deliveryAddress}</p>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 max-w-48">
