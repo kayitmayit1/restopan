@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { TableStatus } from "@prisma/client";
 import { ShoppingCart, X } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface MenuItem {
   id: string;
@@ -57,11 +58,71 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
   const [showPayment, setShowPayment] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
-  const { selectedTableId, setTable, cart, total } = usePOSStore();
+  const [sendingOrder, setSendingOrder] = useState(false);
+  const { selectedTableId, setTable, setActiveOrder, clearItems, cart, total, subtotal, discountAmount, orderType, notes, activeOrderId, activeOrderTotal } = usePOSStore();
   const isMobile = useIsMobile();
 
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
   const tot = total();
+
+  async function handleTableSelect(id: string) {
+    setTable(id);
+    const table = tables.find((t) => t.id === id);
+    if (table?.status === "OCCUPIED") {
+      try {
+        const res = await fetch(`/api/orders?tableId=${id}&paymentStatus=UNPAID&limit=1`);
+        const orders = await res.json();
+        if (orders.length > 0) {
+          setActiveOrder(orders[0].id, orders[0].totalAmount);
+        } else {
+          setActiveOrder(null, 0);
+        }
+      } catch {
+        setActiveOrder(null, 0);
+      }
+    } else {
+      setActiveOrder(null, 0);
+    }
+    setShowTableSelector(false);
+  }
+
+  async function handleSendOrder() {
+    if (cart.length === 0) return;
+    setSendingOrder(true);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locationId,
+          organizationId,
+          tableId: selectedTableId,
+          staffId,
+          type: orderType,
+          notes,
+          items: cart.map((item) => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            notes: item.notes,
+            modifiers: item.modifiers,
+          })),
+          subtotal: subtotal(),
+          discountAmount: discountAmount(),
+          totalAmount: tot,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const order = await res.json();
+      setActiveOrder(order.id, order.totalAmount);
+      clearItems();
+      toast.success("Sipariş mutfağa gönderildi");
+    } catch {
+      toast.error("Sipariş gönderilemedi");
+    } finally {
+      setSendingOrder(false);
+    }
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -80,8 +141,10 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
         <div className="w-96 flex-shrink-0 border-l bg-background flex flex-col">
           <CartPanel
             onCheckout={() => setShowPayment(true)}
+            onSendOrder={handleSendOrder}
             onTableSelect={() => setShowTableSelector(true)}
             tables={tables}
+            sendingOrder={sendingOrder}
           />
         </div>
       )}
@@ -118,8 +181,10 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
             <div className="flex-1 overflow-y-auto">
               <CartPanel
                 onCheckout={() => { setShowMobileCart(false); setShowPayment(true); }}
+                onSendOrder={() => { handleSendOrder(); setShowMobileCart(false); }}
                 onTableSelect={() => { setShowMobileCart(false); setShowTableSelector(true); }}
                 tables={tables}
+                sendingOrder={sendingOrder}
               />
             </div>
           </div>
@@ -130,7 +195,7 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
         <TableSelector
           tables={tables}
           selectedId={selectedTableId}
-          onSelect={(id) => { setTable(id); setShowTableSelector(false); }}
+          onSelect={handleTableSelect}
           onClose={() => setShowTableSelector(false)}
         />
       )}
@@ -141,6 +206,8 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
           organizationId={organizationId}
           locationId={locationId}
           staffId={staffId}
+          activeOrderId={activeOrderId ?? undefined}
+          activeOrderTotal={activeOrderTotal}
         />
       )}
     </div>

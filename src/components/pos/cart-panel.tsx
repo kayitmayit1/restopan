@@ -15,6 +15,9 @@ import {
   ChevronDown,
   ArrowRightLeft,
   Bike,
+  Send,
+  Loader2,
+  CreditCard,
 } from "lucide-react";
 import { TableStatus } from "@prisma/client";
 import { useState } from "react";
@@ -27,13 +30,14 @@ interface Table {
 
 interface CartPanelProps {
   onCheckout: () => void;
+  onSendOrder: () => void;
   onTableSelect: () => void;
   onTransfer?: () => void;
   tables: Table[];
-  activeOrderId?: string;
+  sendingOrder?: boolean;
 }
 
-export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activeOrderId }: CartPanelProps) {
+export function CartPanel({ onCheckout, onSendOrder, onTableSelect, onTransfer, tables, sendingOrder }: CartPanelProps) {
   const {
     cart,
     removeItem,
@@ -53,6 +57,8 @@ export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activ
     deliveryPhone,
     deliveryAddress,
     setDeliveryInfo,
+    activeOrderId,
+    activeOrderTotal,
   } = usePOSStore();
 
   const [showDiscount, setShowDiscount] = useState(false);
@@ -113,9 +119,15 @@ export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activ
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 p-6">
             <ShoppingCart className="w-14 h-14 opacity-10" />
             <p className="text-sm font-medium">Sepet boş</p>
-            <p className="text-xs text-center">
-              Sipariş eklemek için menüden ürün seçin
-            </p>
+            {activeOrderId ? (
+              <p className="text-xs text-center text-emerald-600 font-medium">
+                Masada açık sipariş var — ödeme almak için aşağıdaki butonu kullanın
+              </p>
+            ) : (
+              <p className="text-xs text-center">
+                Sipariş eklemek için menüden ürün seçin
+              </p>
+            )}
           </div>
         ) : (
           <div className="divide-y">
@@ -176,7 +188,7 @@ export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activ
       </div>
 
       {/* Order Totals & Actions */}
-      {cart.length > 0 && (
+      {(cart.length > 0 || (orderType === "DINE_IN" && activeOrderId)) && (
         <div className="border-t p-4 space-y-3">
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between text-muted-foreground">
@@ -279,13 +291,40 @@ export function CartPanel({ onCheckout, onTableSelect, onTransfer, tables, activ
             className="h-8 text-xs"
           />
 
-          <Button
-            onClick={onCheckout}
-            className="w-full h-11 text-base font-semibold"
-            disabled={cart.length === 0}
-          >
-            Ödeme Al · {formatCurrency(tot)}
-          </Button>
+          {/* Send to kitchen (DINE_IN) or create unpaid order */}
+          {orderType === "DINE_IN" ? (
+            <div className="space-y-2">
+              {cart.length > 0 && (
+                <Button
+                  onClick={onSendOrder}
+                  className="w-full h-11 text-base font-semibold"
+                  disabled={sendingOrder}
+                  variant="default"
+                >
+                  {sendingOrder ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                  {sendingOrder ? "Gönderiliyor…" : "Siparişi Gönder"}
+                </Button>
+              )}
+              {activeOrderId && (
+                <Button
+                  onClick={onCheckout}
+                  className="w-full h-11 text-base font-semibold"
+                  variant={cart.length > 0 ? "outline" : "default"}
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Ödeme Al · {formatCurrency(activeOrderTotal)}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button
+              onClick={onCheckout}
+              className="w-full h-11 text-base font-semibold"
+              disabled={cart.length === 0}
+            >
+              Ödeme Al · {formatCurrency(tot)}
+            </Button>
+          )}
         </div>
       )}
     </div>

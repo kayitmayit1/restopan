@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/utils";
 import { broadcast } from "@/lib/sse";
 import { z } from "zod";
+import { OrderStatus } from "@prisma/client";
+
+const VALID_STATUSES = new Set(Object.values(OrderStatus));
 
 const orderSchema = z.object({
   locationId: z.string().optional(),
@@ -165,13 +168,17 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
+  const tableId = searchParams.get("tableId");
+  const paymentStatus = searchParams.get("paymentStatus");
   const limit = parseInt(searchParams.get("limit") || "20");
   const page = parseInt(searchParams.get("page") || "1");
 
   const orders = await db.order.findMany({
     where: {
       location: { organizationId: session.user.organizationId },
-      ...(status ? { status: status as never } : {}),
+      ...(status && VALID_STATUSES.has(status as OrderStatus) ? { status: status as OrderStatus } : {}),
+      ...(tableId ? { tableId } : {}),
+      ...(paymentStatus ? { paymentStatus: paymentStatus as never } : {}),
     },
     include: {
       table: { select: { name: true } },

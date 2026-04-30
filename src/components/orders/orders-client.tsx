@@ -63,17 +63,28 @@ export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
   useOrderSound(true);
 
   useEffect(() => {
-    const es = new EventSource("/api/events");
-    es.onmessage = (e) => {
-      try {
-        const { event, data } = JSON.parse(e.data);
-        if (event === "order:updated") {
-          setOrders((prev) => prev.map((o) => o.id === data.id ? { ...o, status: data.status as OrderStatus } : o));
-          setSelectedOrder((prev) => prev?.id === data.id && prev ? { ...prev, status: data.status as OrderStatus } : prev);
-        }
-      } catch { /* ignore parse errors */ }
-    };
-    return () => es.close();
+    let es: EventSource;
+    let retryTimeout: ReturnType<typeof setTimeout>;
+
+    function connect() {
+      es = new EventSource("/api/events");
+      es.onmessage = (e) => {
+        try {
+          const { event, data } = JSON.parse(e.data);
+          if (event === "order:updated") {
+            setOrders((prev) => prev.map((o) => o.id === data.id ? { ...o, status: data.status as OrderStatus } : o));
+            setSelectedOrder((prev) => prev?.id === data.id && prev ? { ...prev, status: data.status as OrderStatus } : prev);
+          }
+        } catch { /* ignore parse errors */ }
+      };
+      es.onerror = () => {
+        es.close();
+        retryTimeout = setTimeout(connect, 5000);
+      };
+    }
+
+    connect();
+    return () => { es?.close(); clearTimeout(retryTimeout); };
   }, []);
 
   const filtered = orders.filter((o) => {

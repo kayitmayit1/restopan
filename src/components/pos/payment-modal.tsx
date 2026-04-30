@@ -23,6 +23,8 @@ interface PaymentModalProps {
   organizationId: string;
   locationId?: string;
   staffId: string;
+  activeOrderId?: string;
+  activeOrderTotal?: number;
 }
 
 type PaymentMethod = "CASH" | "CREDIT_CARD" | "DEBIT_CARD";
@@ -33,7 +35,7 @@ const METHODS = [
   { value: "DEBIT_CARD" as const, label: "Banka Kartı", icon: Smartphone },
 ];
 
-export function PaymentModal({ onClose, organizationId, locationId, staffId }: PaymentModalProps) {
+export function PaymentModal({ onClose, organizationId, locationId, staffId, activeOrderId, activeOrderTotal }: PaymentModalProps) {
   const { cart, total, discountAmount, subtotal, selectedTableId, orderType, notes, clearCart, deliveryName, deliveryPhone, deliveryAddress } =
     usePOSStore();
 
@@ -47,7 +49,8 @@ export function PaymentModal({ onClose, organizationId, locationId, staffId }: P
   const [splitCount, setSplitCount] = useState(2);
   const [paidParts, setPaidParts] = useState(0);
 
-  const tot = total();
+  // If paying for an existing table order, use that total instead of cart total
+  const tot = activeOrderId && activeOrderTotal ? activeOrderTotal : total();
   const perPerson = splitMode ? tot / splitCount : tot;
   const remainingAmount = splitMode ? tot - paidParts * perPerson : tot;
 
@@ -62,33 +65,44 @@ export function PaymentModal({ onClose, organizationId, locationId, staffId }: P
   ].filter((v, i, arr) => arr.indexOf(v) === i);
 
   async function createOrder(paymentAmount: number) {
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        locationId,
-        organizationId,
-        tableId: selectedTableId,
-        staffId,
-        type: orderType,
-        notes,
-        deliveryName: orderType === "DELIVERY" ? deliveryName : undefined,
-        deliveryPhone: orderType === "DELIVERY" ? deliveryPhone : undefined,
-        deliveryAddress: orderType === "DELIVERY" ? deliveryAddress : undefined,
-        items: cart.map((item) => ({
-          menuItemId: item.menuItemId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          notes: item.notes,
-          modifiers: item.modifiers,
-        })),
-        subtotal: subtotal(),
-        discountAmount: discountAmount(),
-        totalAmount: tot,
-        payment: { method, amount: paymentAmount },
-      }),
-    });
-    if (!res.ok) throw new Error();
+    if (activeOrderId) {
+      // Pay for existing table order
+      const res = await fetch(`/api/orders/${activeOrderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment: { method, amount: paymentAmount } }),
+      });
+      if (!res.ok) throw new Error();
+    } else {
+      // Create new order with payment
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locationId,
+          organizationId,
+          tableId: selectedTableId,
+          staffId,
+          type: orderType,
+          notes,
+          deliveryName: orderType === "DELIVERY" ? deliveryName : undefined,
+          deliveryPhone: orderType === "DELIVERY" ? deliveryPhone : undefined,
+          deliveryAddress: orderType === "DELIVERY" ? deliveryAddress : undefined,
+          items: cart.map((item) => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            notes: item.notes,
+            modifiers: item.modifiers,
+          })),
+          subtotal: subtotal(),
+          discountAmount: discountAmount(),
+          totalAmount: tot,
+          payment: { method, amount: paymentAmount },
+        }),
+      });
+      if (!res.ok) throw new Error();
+    }
   }
 
   async function handleComplete() {

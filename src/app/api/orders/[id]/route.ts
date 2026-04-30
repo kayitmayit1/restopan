@@ -22,6 +22,48 @@ export async function PATCH(
   if (!order || order.location.organizationId !== session.user.organizationId)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Payment for existing order (e.g. table checkout)
+  if (body.payment) {
+    const taxAmount = order.totalAmount * 0.18;
+    const receiptNumber = `R${order.orderNumber.slice(1)}`;
+
+    const [updated] = await db.$transaction([
+      db.order.update({
+        where: { id },
+        data: { status: "COMPLETED", paymentStatus: "PAID", completedAt: new Date() },
+      }),
+      db.receipt.upsert({
+        where: { orderId: id },
+        create: {
+          orderId: id,
+          locationId: order.locationId,
+          receiptNumber,
+          subtotal: order.subtotal,
+          taxAmount,
+          discountAmount: order.discountAmount,
+          totalAmount: order.totalAmount,
+          payments: { create: { method: body.payment.method, amount: body.payment.amount } },
+        },
+        update: {
+          payments: { create: { method: body.payment.method, amount: body.payment.amount } },
+        },
+      }),
+    ]);
+
+    if (order.tableId) {
+      await db.table.update({ where: { id: order.tableId }, data: { status: "AVAILABLE" } });
+    }
+
+    broadcast(session.user.organizationId, "order:updated", {
+      id: updated.id,
+      status: updated.status,
+      orderNumber: updated.orderNumber,
+    });
+
+    return NextResponse.json(updated);
+  }
+
+  // Status-only update
   const updated = await db.order.update({
     where: { id },
     data: {
@@ -30,9 +72,9 @@ export async function PATCH(
     },
   });
 
-  if (body.status === "COMPLETED" && body.status !== order.status) {
-    await db.table.updateMany({
-      where: { id: order.tableId ?? "" },
+  if (body.status === "COMPLETED" && body.status !== order.status && order.tableId) {
+    await db.table.update({
+      where: { id: order.tableId },
       data: { status: "AVAILABLE" },
     });
   }

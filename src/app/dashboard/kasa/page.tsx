@@ -27,7 +27,13 @@ export default async function KasaPage() {
         status: { not: "CANCELLED" },
         paymentStatus: "PAID",
       },
-      include: { receipt: { include: { payments: true } } },
+      select: {
+        id: true,
+        orderNumber: true,
+        totalAmount: true,
+        createdAt: true,
+        receipt: { select: { payments: { select: { method: true, amount: true } } } },
+      },
       orderBy: { createdAt: "desc" },
     }),
     db.expense.findMany({
@@ -49,7 +55,7 @@ export default async function KasaPage() {
       />
       <div className="p-6">
         <KasaClient
-          orders={orders as never}
+          orders={orders}
           expenses={expenses}
           locationId={session.user.locationId}
         />
