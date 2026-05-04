@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PromotionType } from "@prisma/client";
 import { z } from "zod";
 
 const patchSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional().nullable(),
-  type: z.enum(["PERCENTAGE", "FIXED", "BOGO", "FREE_ITEM"]).optional(),
+  type: z.nativeEnum(PromotionType).optional(),
   value: z.number().optional(),
   minOrderAmount: z.number().optional().nullable(),
   maxDiscount: z.number().optional().nullable(),
