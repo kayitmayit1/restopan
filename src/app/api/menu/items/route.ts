@@ -17,16 +17,23 @@ const schema = z.object({
   allergens: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   sortOrder: z.number().default(0),
+  image: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user.organizationId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await req.json();
     const data = schema.parse(body);
-    const item = await db.menuItem.create({ data });
+    if (data.organizationId !== session.user.organizationId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const item = await db.menuItem.create({
+      data,
+      include: { variants: { select: { id: true, name: true, price: true } } },
+    });
     return NextResponse.json(item, { status: 201 });
   } catch (err) {
     console.error("[menu/items POST]", err);

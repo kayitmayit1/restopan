@@ -24,7 +24,7 @@ export const PLANS = {
   PROFESSIONAL: {
     name: "Professional",
     planCode: process.env.IYZICO_PLAN_PROFESSIONAL ?? "",
-    price: 799,
+    price: 999,
     limits: { tables: 50, users: 10, locations: 3 },
   },
   ENTERPRISE: {

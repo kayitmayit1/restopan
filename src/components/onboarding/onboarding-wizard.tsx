@@ -52,9 +52,10 @@ const TABLE_PREFIXES = ["Masa", "Salon", "Teras", "VIP", "Bahçe"];
 interface Props {
   organizationId: string;
   userName: string;
+  plan: "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
 }
 
-export function OnboardingWizard({ organizationId, userName }: Props) {
+export function OnboardingWizard({ organizationId, userName, plan }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -68,8 +69,7 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
   const [currency, setCurrency] = useState("TRY");
   const [taxRate, setTaxRate] = useState(10);
 
-  // Step 1 — Masalar (Starter plan: max 10)
-  const TABLE_LIMIT = 10;
+  const TABLE_LIMIT = plan === "STARTER" ? 10 : plan === "PROFESSIONAL" ? 50 : 999;
   const [tableCount, setTableCount] = useState(5);
   const [tablePrefix, setTablePrefix] = useState("Masa");
   const [tableCapacity, setTableCapacity] = useState(4);
@@ -119,13 +119,13 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
             <Check className="w-10 h-10 text-emerald-600" />
           </div>
           <h1 className="text-2xl font-bold mb-2">Her şey hazır!</h1>
-          <p className="text-muted-foreground mb-8">
-            Restoranınız kuruldu. Dashboard'da sizi bekliyoruz.
-          </p>
-          <Button size="lg" className="gap-2 px-8" onClick={() => router.push("/dashboard")}>
-            Dashboard'a Git
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+         <p className="text-muted-foreground mb-8">
+  {`Restoranınız kuruldu. Dashboard'da sizi bekliyoruz.`}
+</p>
+       <Button size="lg" className="gap-2 px-8" onClick={() => router.push("/dashboard")}>
+  {`Dashboard'a Git`}
+  <ArrowRight className="w-4 h-4" />
+</Button>
         </div>
       </div>
     );
@@ -139,7 +139,7 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
             <ChefHat className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-sm">RestoPan</span>
+          <span className="font-bold text-sm">RestoPAN</span>
         </div>
         <button
           onClick={() => router.push("/dashboard")}
@@ -284,7 +284,9 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">Türkiye'de yiyecek için genellikle %10</p>
+           <p className="text-xs text-muted-foreground">
+  {`Türkiye'de yiyecek için genellikle %10`}
+</p>
               </div>
 
               <Button className="w-full gap-2" onClick={() => setStep(1)}>
@@ -317,7 +319,7 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
                       <Plus className="w-4 h-4" />
                     </button>
                     <div className="flex gap-2 ml-2">
-                      {[3, 5, 8, 10].map((n) => (
+                      {(plan === "STARTER" ? [3, 5, 8, 10] : [5, 10, 20, 30]).map((n) => (
                         <button key={n} type="button" onClick={() => setTableCount(n)}
                           className={cn("px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
                             tableCount === n ? "bg-primary text-white border-primary" : "hover:bg-muted")}>
@@ -326,9 +328,11 @@ export function OnboardingWizard({ organizationId, userName }: Props) {
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-amber-600 font-medium">
-                    Ücretsiz planda maksimum {TABLE_LIMIT} masa — daha fazlası için Professional plana geç.
-                  </p>
+                  {plan === "STARTER" && (
+                    <p className="text-xs text-amber-600 font-medium">
+                      Ücretsiz planda maksimum {TABLE_LIMIT} masa — daha fazlası için Professional plana geç.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">

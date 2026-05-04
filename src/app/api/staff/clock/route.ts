@@ -10,8 +10,21 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.id || !session.user.locationId) {
+  if (!session?.user?.id || !session.user.organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // locationId may be null for staff who weren't assigned to a specific branch;
+  // fall back to the organization's first active location
+  let locationId = session.user.locationId;
+  if (!locationId) {
+    const loc = await db.location.findFirst({
+      where: { organizationId: session.user.organizationId, isActive: true },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (!loc) return NextResponse.json({ error: "Aktif şube bulunamadı" }, { status: 404 });
+    locationId = loc.id;
   }
 
   const body = await req.json();
@@ -33,7 +46,7 @@ export async function POST(req: NextRequest) {
     const timeStr = now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
     shift = await db.shift.create({
       data: {
-        locationId: session.user.locationId,
+        locationId,
         staffId: session.user.id,
         date: todayStart,
         startTime: timeStr,

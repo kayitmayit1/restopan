@@ -14,7 +14,7 @@ export const PLAN_FEATURES = {
     "pos", "tables", "kds", "orders", "menu",
     "reservations", "staff", "inventory", "notifications",
     "analytics", "finance", "kasa", "online-order",
-    "campaigns", "customers", "suppliers",
+    "campaigns", "customers", "suppliers", "table-requests",
   ],
   ENTERPRISE: ["*"],
 } as const;

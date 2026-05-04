@@ -49,21 +49,37 @@ const PLANS = [
   {
     name: "Starter",
     price: "Ücretsiz",
-    sub: "Sonsuza kadar",
+    sub: " / süresiz",
     icon: Zap,
     color: "text-slate-600",
-    features: ["10 masa", "2 kullanıcı", "1 şube", "Temel POS & siparişler", "E-posta destek (1 iş günü)"],
+    features: [
+      "10 masa, 2 kullanıcı, 1 şube",
+      "Temel POS & siparişler",
+      "Görsellli dijital QR menü",
+      "Günün menüsü duyuru bandı",
+      "Wi-Fi şifresi & sosyal medya menüde",
+      "E-posta destek (1 iş günü)",
+    ],
     cta: "Ücretsiz Başla",
     href: "/kayit",
     highlight: false,
   },
   {
     name: "Professional",
-    price: "₺799",
+    price: "₺999",
     sub: "/ ay",
     icon: Rocket,
     color: "text-primary",
-    features: ["50 masa", "10 kullanıcı", "3 şube", "Tüm özellikler", "Online sipariş", "WhatsApp destek — 1 saat yanıt (09:00–22:00)"],
+    features: [
+      "50 masa, 10 kullanıcı, 3 şube",
+      "Starter'daki tüm özellikler",
+      "Garson çağır & hesap iste",
+      "Online & paket sipariş sayfası",
+      "Stok & envanter yönetimi",
+      "Gelişmiş raporlar & analitik",
+      "Kampanyalar & müşteri yönetimi",
+      "WhatsApp destek — 1 saat yanıt (09:00–22:00)",
+    ],
     cta: "14 Gün Ücretsiz Dene",
     href: "/kayit/pro",
     highlight: true,
@@ -75,7 +91,14 @@ const PLANS = [
     sub: "",
     icon: Building2,
     color: "text-violet-600",
-    features: ["Sınırsız masa & kullanıcı", "Sınırsız şube", "WhatsApp/telefon — 30 dk yanıt (09:00–22:00)", "Sistem kesintisinde mesai dışı bildirim", "Yerinde kurulum & eğitim"],
+    features: [
+      "Sınırsız masa, kullanıcı & şube",
+      "Professional'daki tüm özellikler",
+      "Özel entegrasyon & API erişimi",
+      "WhatsApp/telefon — 30 dk yanıt (09:00–22:00)",
+      "Sistem kesintisinde mesai dışı bildirim",
+      "Yerinde kurulum & eğitim",
+    ],
     cta: "Fiyat Teklifi Alın",
     href: "mailto:satis@restopan.com",
     highlight: false,
@@ -83,7 +106,7 @@ const PLANS = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Hilmi Kırgız", role: "İşletme Sahibi · İstanbul", quote: "Pos'tan mutfağa kadar her şey bağlı, garsonlarımız artık kağıt almıyor teknolojiye adapte olduk memnunuz. ", stars: 5 },
+  { name: "Hilmi Kırgız", role: "İşletme Sahibi · İstanbul", quote: "POS'tan mutfağa kadar her şey bağlı, garsonlarımız artık kağıt almıyor teknolojiye adapte olduk memnunuz. ", stars: 5 },
   { name: "Serdar Keskin", role: "Müdür · Ankara", quote: "Stok takibi sayesinde fire %30 kadar azaldı, raporlar da çok net takip etmesi kolay", stars: 5 },
   { name: "Mevlüt Toraman", role: "Kafe Sahibi · İzmir", quote: "Kurulum kısa sürdü zaten yönlendiriyor sistem, hazır menü şablonu işimi çok kolaylaştırdı kendi ürünlerimi hazır menü şablonuna ekledim", stars: 5 },
 ];
@@ -98,7 +121,7 @@ export default function LandingPage() {
     description: "Türkiye'nin restoran yönetim yazılımı. POS, masa planı, mutfak ekranı, stok, personel ve QR menü.",
     offers: [
       { "@type": "Offer", price: "0", priceCurrency: "TRY", name: "Starter" },
-      { "@type": "Offer", price: "799", priceCurrency: "TRY", name: "Professional" },
+      { "@type": "Offer", price: "999", priceCurrency: "TRY", name: "Professional" },
     ],
     url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
     inLanguage: "tr",
@@ -139,7 +162,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-24 text-center">
         <div className="inline-flex items-center gap-2 bg-primary/8 text-primary text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
           <Zap className="w-3 h-3" />
-          Starter plan sonsuza kadar ücretsiz
+          Starter plan tamamen ücretsiz
         </div>
 
         <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] mb-6">
@@ -426,29 +449,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="yorumlar" className="py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight mb-4">Müşterilerimiz ne diyor?</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.stars }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm leading-relaxed mb-5">&quot;{t.quote}&quot;</p>
-                <p className="font-semibold text-sm">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+  
       {/* Pricing */}
       <section id="fiyatlar" className="bg-gray-50 py-24">
         <div className="max-w-5xl mx-auto px-6">
@@ -503,18 +504,47 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <RestoPanLogo iconSize={32} />
-          <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
-            <Link href="/hakkimizda" className="hover:text-foreground transition-colors">Hakkımızda</Link>
-            <Link href="/iletisim" className="hover:text-foreground transition-colors">İletişim</Link>
-            <Link href="/destek" className="hover:text-foreground transition-colors">Destek</Link>
-            <Link href="/gizlilik" className="hover:text-foreground transition-colors">Gizlilik</Link>
-            <Link href="/kullanim-kosullari" className="hover:text-foreground transition-colors">Kullanım Koşulları</Link>
+
+    {/* Testimonials */}
+      <section id="yorumlar" className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight mb-4">Müşterilerimiz ne diyor?</h2>
           </div>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} RestoPAN. Tüm hakları saklıdır.</p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: t.stars }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed mb-5">&quot;{t.quote}&quot;</p>
+                <p className="font-semibold text-sm">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+
+
+
+
+      {/* Footer */}
+      <footer className="bg-gray-950 border-t border-gray-800 py-10">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <RestoPanLogo iconSize={32} dark />
+          <div className="flex flex-wrap items-center gap-5 text-sm text-gray-400">
+            <Link href="/hakkimizda" className="hover:text-white transition-colors">Hakkımızda</Link>
+            <Link href="/iletisim" className="hover:text-white transition-colors">İletişim</Link>
+            <Link href="/destek" className="hover:text-white transition-colors">Destek</Link>
+            <Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik</Link>
+            <Link href="/kullanim-kosullari" className="hover:text-white transition-colors">Kullanım Koşulları</Link>
+          </div>
+          <p className="text-xs text-gray-500">© {new Date().getFullYear()} RestoPAN. Tüm hakları saklıdır.</p>
         </div>
       </footer>
 

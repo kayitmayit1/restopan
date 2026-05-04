@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Building2, MapPin, Globe, Bell, Plus, Loader2, Sun, Moon, Bike } from "lucide-react";
+import { Building2, MapPin, Globe, Bell, Plus, Loader2, Sun, Moon, Bike, Wifi, ExternalLink, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { isValidTurkishPhone, PHONE_ERROR } from "@/lib/phone";
@@ -23,6 +23,13 @@ interface Organization {
   deliveryMinOrder?: number | null;
   deliveryFee?: number | null;
   deliveryZone?: string | null;
+  dailySpecial?: string | null;
+  dailySpecialActive?: boolean;
+  wifiName?: string | null;
+  wifiPassword?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  twitterUrl?: string | null;
 }
 interface Location {
   id: string; name: string; address?: string | null; phone?: string | null;
@@ -103,6 +110,7 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
           <TabsTrigger value="delivery"><Bike className="w-3.5 h-3.5 mr-1.5" />Teslimat</TabsTrigger>
           <TabsTrigger value="preferences"><Globe className="w-3.5 h-3.5 mr-1.5" />Tercihler</TabsTrigger>
           <TabsTrigger value="notifications"><Bell className="w-3.5 h-3.5 mr-1.5" />Bildirimler</TabsTrigger>
+          <TabsTrigger value="menu-links"><Wifi className="w-3.5 h-3.5 mr-1.5" />Menü & Bağlantılar</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-4">
@@ -336,6 +344,113 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
                   <Switch defaultChecked />
                 </div>
               ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="menu-links" className="mt-4 space-y-4">
+          {/* Daily Special */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Megaphone className="w-4 h-4 text-amber-500" />
+                <CardTitle className="text-base">Günün Menüsü</CardTitle>
+              </div>
+              <p className="text-sm text-muted-foreground">Müşteri menü sayfasının üstünde bir duyuru bandı gösterir.</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Aktif</Label>
+                <Switch
+                  checked={org.dailySpecialActive ?? false}
+                  onCheckedChange={(v) => setOrg({ ...org, dailySpecialActive: v })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Duyuru Metni</Label>
+                <Input
+                  placeholder="Örn: Günün çorbası: Mercimek · Şefin Tavsiyesi: Kuzu Güveç"
+                  value={org.dailySpecial ?? ""}
+                  onChange={(e) => setOrg({ ...org, dailySpecial: e.target.value || null })}
+                />
+              </div>
+              <Button onClick={saveOrg} disabled={saving}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Kaydet
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Wi-Fi */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Wifi className="w-4 h-4 text-blue-500" />
+                <CardTitle className="text-base">Wi-Fi</CardTitle>
+              </div>
+              <p className="text-sm text-muted-foreground">Müşteri menüsünün altında gösterilir.</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Ağ Adı (SSID)</Label>
+                  <Input
+                    placeholder="Örn: Restoran_WiFi"
+                    value={org.wifiName ?? ""}
+                    onChange={(e) => setOrg({ ...org, wifiName: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Şifre</Label>
+                  <Input
+                    placeholder="Wi-Fi şifresi"
+                    value={org.wifiPassword ?? ""}
+                    onChange={(e) => setOrg({ ...org, wifiPassword: e.target.value || null })}
+                  />
+                </div>
+              </div>
+              <Button onClick={saveOrg} disabled={saving}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Kaydet
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Social Media */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4 text-pink-500" />
+                <CardTitle className="text-base">Sosyal Medya</CardTitle>
+              </div>
+              <p className="text-sm text-muted-foreground">Müşteri menüsünün altında takip butonları olarak gösterilir.</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Instagram URL</Label>
+                <Input
+                  placeholder="https://instagram.com/restoraniniz"
+                  value={org.instagramUrl ?? ""}
+                  onChange={(e) => setOrg({ ...org, instagramUrl: e.target.value || null })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Facebook URL</Label>
+                <Input
+                  placeholder="https://facebook.com/restoraniniz"
+                  value={org.facebookUrl ?? ""}
+                  onChange={(e) => setOrg({ ...org, facebookUrl: e.target.value || null })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>X (Twitter) URL</Label>
+                <Input
+                  placeholder="https://x.com/restoraniniz"
+                  value={org.twitterUrl ?? ""}
+                  onChange={(e) => setOrg({ ...org, twitterUrl: e.target.value || null })}
+                />
+              </div>
+              <Button onClick={saveOrg} disabled={saving}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Kaydet
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

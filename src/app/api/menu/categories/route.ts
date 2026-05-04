@@ -12,10 +12,13 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user.organizationId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
   const data = schema.parse(body);
+  if (data.organizationId !== session.user.organizationId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const category = await db.menuCategory.create({ data });
   return NextResponse.json(category, { status: 201 });
 }

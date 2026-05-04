@@ -30,7 +30,7 @@ export function AdminSidebar() {
           <ShieldCheck className="w-4 h-4 text-white" />
         </div>
         <div>
-          <p className="font-bold text-[13px] text-white">RestoPan Admin</p>
+          <p className="font-bold text-[13px] text-white">RestoPAN Admin</p>
           <p className="text-[10px] text-zinc-500">Süper Yönetici</p>
         </div>
       </div>
@@ -64,7 +64,7 @@ export function AdminSidebar() {
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-zinc-500 hover:bg-zinc-800 hover:text-zinc-100 transition-colors mb-1"
         >
           <LayoutDashboard className="w-3.5 h-3.5" />
-          Dashboard'a Dön
+          {"Dashboard'a Dön"}
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/giris" })}

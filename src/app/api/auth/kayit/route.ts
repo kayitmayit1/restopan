@@ -113,34 +113,6 @@ export async function POST(req: NextRequest) {
     const slugExists = await db.organization.findUnique({ where: { slug } });
     if (slugExists) slug = `${slug}-${Date.now()}`;
 
-    const user = await db.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        passwordHash,
-      },
-    });
-
-    const organization = await db.organization.create({
-      data: {
-        name: data.organizationName,
-        slug,
-        plan: data.plan,
-        members: {
-          create: {
-            userId: user.id,
-            role: "OWNER",
-          },
-        },
-        locations: {
-          create: {
-            name: "Ana Şube",
-            isActive: true,
-          },
-        },
-      },
-    });
-
     const now = new Date();
     const isPro = data.plan === "PROFESSIONAL";
     const periodEnd = new Date(now);
@@ -150,13 +122,29 @@ export async function POST(req: NextRequest) {
       periodEnd.setFullYear(periodEnd.getFullYear() + 100);
     }
 
-    await db.subscription.create({
-      data: {
-        organizationId: organization.id,
-        status: isPro ? "TRIALING" : "ACTIVE",
-        currentPeriodStart: now,
-        currentPeriodEnd: periodEnd,
-      },
+    await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { name: data.name, email: data.email, passwordHash },
+      });
+
+      const organization = await tx.organization.create({
+        data: {
+          name: data.organizationName,
+          slug,
+          plan: data.plan,
+          members: { create: { userId: user.id, role: "OWNER" } },
+          locations: { create: { name: "Ana Şube", isActive: true } },
+        },
+      });
+
+      await tx.subscription.create({
+        data: {
+          organizationId: organization.id,
+          status: isPro ? "TRIALING" : "ACTIVE",
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+        },
+      });
     });
 
     return NextResponse.json({ success: true });

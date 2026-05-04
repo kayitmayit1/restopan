@@ -29,14 +29,25 @@
       "Bash(grep -rn 'api/orders/\\\\${' c:/Users/okury/Desktop/restoran/src --include=\"*.tsx\" --include=\"*.ts\")",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('next:', p.dependencies.next\\); console.log\\('deps:', Object.keys\\(p.dependencies\\).join\\(', '\\)\\)\")",
       "Bash(git log *)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(node -e \"const l = require\\('c:/Users/okury/Desktop/restoran/node_modules/lucide-react'\\); const keys = Object.keys\\(l\\); console.log\\(keys.filter\\(k => /instagram|facebook|twitter|x$/i.test\\(k\\)\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"const l = require\\('c:/Users/okury/Desktop/restoran/node_modules/lucide-react'\\); const keys = Object.keys\\(l\\); console.log\\(keys.filter\\(k => /^[A-Z]/.test\\(k\\) && !k.startsWith\\('Lucide'\\)\\).slice\\(0,5\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"const l = require\\('c:/Users/okury/Desktop/restoran/node_modules/lucide-react'\\); const keys = Object.keys\\(l\\); console.log\\(keys.filter\\(k => /share|link|external|social|at/i.test\\(k\\) && !k.startsWith\\('Lucide'\\)\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(grep -r 'await.*$transaction\\\\|transaction' 'c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\api')",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\" -Recurse -Depth 2)",
+      "Bash(Select-Object FullName)",
+      "Bash(git ls-files *)",
+      "Bash(gh repo *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar",
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\api\\orders\\[id]",
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\api\\customers\\[id]",
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\api\\pwa",
-      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\siparis"
+      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\siparis",
+      "c:\\Users\\okury\\Desktop\\restoran\\public\\uploads",
+      "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\api\\table-requests",
+      "\\dev"
     ]
   }
 }

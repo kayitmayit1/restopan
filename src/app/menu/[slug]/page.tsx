@@ -42,7 +42,20 @@ export default async function OnlineMenuPage({
 
   return (
     <OnlineMenuClient
-      organization={{ id: organization.id, name: organization.name, logo: organization.logo, currency: organization.currency }}
+      organization={{
+        id: organization.id,
+        name: organization.name,
+        logo: organization.logo,
+        currency: organization.currency,
+        plan: organization.plan,
+        dailySpecial: organization.dailySpecial,
+        dailySpecialActive: organization.dailySpecialActive,
+        wifiName: organization.wifiName,
+        wifiPassword: organization.wifiPassword,
+        instagramUrl: organization.instagramUrl,
+        facebookUrl: organization.facebookUrl,
+        twitterUrl: organization.twitterUrl,
+      }}
       categories={categories}
       locationId={locationId}
       tableId={tableId}

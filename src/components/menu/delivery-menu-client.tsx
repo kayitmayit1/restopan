@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -308,29 +309,36 @@ export function DeliveryMenuClient({ organization, categories, locationId, deliv
               {cat.items.map((item) => {
                 const inCart = cart.find((c) => c.menuItemId === item.id);
                 return (
-                  <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-[15px] leading-snug">{item.name}</p>
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{item.description}</p>
-                      )}
-                      <p className="text-primary font-bold mt-1.5">{formatCurrency(item.price)}</p>
-                    </div>
-                    {inCart ? (
-                      <div className="flex items-center gap-1.5 bg-primary/8 rounded-xl p-1 flex-shrink-0">
-                        <button onClick={() => updateQty(item.id, inCart.quantity - 1)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white shadow-sm">
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-sm font-bold w-5 text-center">{inCart.quantity}</span>
-                        <button onClick={() => updateQty(item.id, inCart.quantity + 1)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white">
-                          <Plus className="w-3 h-3" />
-                        </button>
+                  <div key={item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    {item.image && (
+                      <div className="relative w-full h-36">
+                        <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />
                       </div>
-                    ) : (
-                      <button onClick={() => addItem(item)} className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white flex-shrink-0">
-                        <Plus className="w-4 h-4" />
-                      </button>
                     )}
+                    <div className="p-4 flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-[15px] leading-snug">{item.name}</p>
+                        {item.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{item.description}</p>
+                        )}
+                        <p className="text-primary font-bold mt-1.5">{formatCurrency(item.price)}</p>
+                      </div>
+                      {inCart ? (
+                        <div className="flex items-center gap-1.5 bg-primary/8 rounded-xl p-1 flex-shrink-0">
+                          <button onClick={() => updateQty(item.id, inCart.quantity - 1)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-white shadow-sm">
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-sm font-bold w-5 text-center">{inCart.quantity}</span>
+                          <button onClick={() => updateQty(item.id, inCart.quantity + 1)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white">
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => addItem(item)} className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white flex-shrink-0">
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

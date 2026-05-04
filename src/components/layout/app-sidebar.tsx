@@ -11,10 +11,6 @@ import {
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { getInitials } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
@@ -125,6 +121,7 @@ export function AppSidebar({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const role = session?.user?.role as Role | undefined;
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/notifications?unread=1")
@@ -280,7 +277,7 @@ export function AppSidebar({
 
       {/* User */}
       {isCollapsed ? (
-        <div className="p-3 border-t border-sidebar-border flex justify-center">
+        <div className="p-3 border-t border-sidebar-border flex flex-col items-center gap-2">
           <Avatar
             className="w-8 h-8 cursor-pointer"
             onClick={() => router.push("/dashboard/ayarlar/profil")}
@@ -291,34 +288,51 @@ export function AppSidebar({
               {getInitials(session?.user?.name || "U")}
             </AvatarFallback>
           </Avatar>
+          <button
+            onClick={() => signOut({ callbackUrl: "/giris" })}
+            title="Çıkış Yap"
+            className="p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/50 hover:text-destructive transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
       ) : (
-        <div className="p-3 border-t border-sidebar-border">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
-              <>
-                <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarImage src={session?.user?.image || ""} />
-                  <AvatarFallback className="text-xs bg-primary text-white">
-                    {getInitials(session?.user?.name || "U")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium text-sidebar-foreground truncate">{session?.user?.name}</p>
-                  <p className="text-xs text-sidebar-foreground/50 truncate">{role ?? session?.user?.email}</p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-sidebar-foreground/40 flex-shrink-0" />
-              </>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem onClick={() => router.push("/dashboard/ayarlar/profil")}>Profil</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/giris" })} className="text-destructive">
-                <LogOut className="w-4 h-4 mr-2" />
+        <div className="border-t border-sidebar-border">
+          <button
+            onClick={() => setUserMenuOpen((v) => !v)}
+            className="w-full flex items-center gap-3 px-5 py-3 hover:bg-sidebar-accent transition-colors text-left"
+          >
+            <Avatar className="w-8 h-8 flex-shrink-0">
+              <AvatarImage src={session?.user?.image || ""} />
+              <AvatarFallback className="text-xs bg-primary text-white">
+                {getInitials(session?.user?.name || "U")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{session?.user?.name}</p>
+              <p className="text-xs text-sidebar-foreground/50 truncate">{role ?? session?.user?.email}</p>
+            </div>
+            <ChevronDown className={cn("w-4 h-4 text-sidebar-foreground/40 flex-shrink-0 transition-transform", userMenuOpen && "rotate-180")} />
+          </button>
+
+          {userMenuOpen && (
+            <div className="px-3 pb-3 space-y-0.5">
+              <button
+                onClick={() => { setUserMenuOpen(false); router.push("/dashboard/ayarlar/profil"); }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Profil Ayarları
+              </button>
+              <button
+                onClick={() => signOut({ callbackUrl: "/giris" })}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
                 Çıkış Yap
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </aside>

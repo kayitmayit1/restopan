@@ -9,6 +9,7 @@ import { LiveTables } from "@/components/dashboard/live-tables";
 import { LowStockAlert } from "@/components/dashboard/low-stock-alert";
 import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
 import { ShiftWidget } from "@/components/dashboard/shift-widget";
+import { TableRequestsPanel } from "@/components/dashboard/table-requests-panel";
 import { startOfDay, endOfDay, subDays } from "date-fns";
 import Link from "next/link";
 import { ShoppingCart, LayoutGrid, ChefHat, UtensilsCrossed } from "lucide-react";
@@ -236,6 +237,7 @@ export default async function DashboardPage() {
             <RecentOrders orders={data.recentOrders} />
           </div>
           <div className="space-y-6">
+            <TableRequestsPanel />
             <TopItems items={data.topItems} />
             {data.lowStockItems.length > 0 && (
               <LowStockAlert items={data.lowStockItems} />

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { PLAN_LIMITS } from "@/lib/plan-limits";
 
 const schema = z.object({
   locationName: z.string().min(1).default("Ana Şube"),
@@ -10,7 +11,7 @@ const schema = z.object({
   currency: z.string().default("TRY"),
   taxRate: z.number().min(0).max(100).default(10),
   businessType: z.string().optional(),
-  tableCount: z.number().min(0).max(10), // Starter plan limit
+  tableCount: z.number().min(0).max(999),
   tablePrefix: z.string().default("Masa"),
   tableCapacity: z.number().default(4),
 });
@@ -24,6 +25,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const data = schema.parse(body);
   const orgId = session.user.organizationId;
+
+  const org = await db.organization.findUnique({ where: { id: orgId }, select: { plan: true } });
+  const tableLimit = PLAN_LIMITS[(org?.plan as keyof typeof PLAN_LIMITS) ?? "STARTER"].tables;
+  if (data.tableCount > tableLimit) {
+    return NextResponse.json({ error: "Plan limitini aşıyor" }, { status: 400 });
+  }
 
   await db.$transaction(async (tx) => {
     await tx.organization.update({

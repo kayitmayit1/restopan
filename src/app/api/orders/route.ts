@@ -44,17 +44,39 @@ const orderSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user.organizationId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await req.json();
     const data = orderSchema.parse(body);
 
+    if (data.organizationId !== session.user.organizationId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Server-side price validation — ignore client-sent prices, use DB prices
+    const menuItemIds = [...new Set(data.items.map((i) => i.menuItemId))];
+    const dbItems = await db.menuItem.findMany({
+      where: { id: { in: menuItemIds }, organizationId: session.user.organizationId, isActive: true },
+      select: { id: true, price: true },
+    });
+    if (dbItems.length !== menuItemIds.length) {
+      return NextResponse.json({ error: "Geçersiz ürün" }, { status: 400 });
+    }
+    const priceMap = new Map(dbItems.map((m) => [m.id, m.price]));
+    const validatedItems = data.items.map((item) => ({
+      ...item,
+      unitPrice: priceMap.get(item.menuItemId)!,
+    }));
+    const subtotal = validatedItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+    const discountAmount = data.discountAmount;
+    const totalAmount = Math.max(0, subtotal - discountAmount);
+
     // Get the first location if not specified
     let locationId = data.locationId;
     if (!locationId) {
       const location = await db.location.findFirst({
-        where: { organizationId: data.organizationId },
+        where: { organizationId: session.user.organizationId },
       });
       locationId = location?.id;
     }
@@ -63,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 
     const orderNumber = generateOrderNumber();
-    const taxAmount = data.totalAmount * 0.18;
+    const taxAmount = totalAmount * 0.18;
 
     const order = await db.order.create({
       data: {
@@ -74,17 +96,17 @@ export async function POST(req: NextRequest) {
         type: data.type,
         status: "CONFIRMED",
         paymentStatus: data.payment ? "PAID" : "UNPAID",
-        subtotal: data.subtotal,
+        subtotal,
         taxAmount,
-        discountAmount: data.discountAmount,
-        totalAmount: data.totalAmount,
+        discountAmount,
+        totalAmount,
         notes: data.notes,
         deliveryName: data.deliveryName,
         deliveryPhone: data.deliveryPhone,
         deliveryAddress: data.deliveryAddress,
         source: "POS",
         items: {
-          create: data.items.map((item) => ({
+          create: validatedItems.map((item) => ({
             menuItemId: item.menuItemId,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
@@ -119,10 +141,10 @@ export async function POST(req: NextRequest) {
           orderId: order.id,
           locationId,
           receiptNumber,
-          subtotal: data.subtotal,
+          subtotal,
           taxAmount,
-          discountAmount: data.discountAmount,
-          totalAmount: data.totalAmount,
+          discountAmount,
+          totalAmount,
           payments: {
             create: {
               method: data.payment.method,
@@ -147,7 +169,7 @@ export async function POST(req: NextRequest) {
       type: order.type,
       tableId: order.tableId,
       totalAmount: order.totalAmount,
-      itemCount: data.items.reduce((s, i) => s + i.quantity, 0),
+      itemCount: validatedItems.reduce((s, i) => s + i.quantity, 0),
     });
 
     return NextResponse.json(order, { status: 201 });

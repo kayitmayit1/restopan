@@ -7,6 +7,15 @@ import { PLANS } from "@/lib/iyzico";
 //              subscription.canceled, subscription.upgraded, subscription.activated
 
 export async function POST(req: NextRequest) {
+  // Webhook secret validation — configure iyzico to POST to /api/billing/webhook?secret=YOUR_SECRET
+  const secret = process.env.IYZICO_WEBHOOK_SECRET;
+  if (secret) {
+    const received = new URL(req.url).searchParams.get("secret");
+    if (received !== secret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   try {
     const body = await req.json() as Record<string, unknown>;
     const eventType = body.eventType as string | undefined;

@@ -39,16 +39,21 @@ export function ReservationsClient({ reservations: initialRes, tables, locationI
   const [showAdd, setShowAdd] = useState(false);
 
   const today = new Date();
-  const upcoming = reservations.filter((r) => new Date(r.date) >= today && r.status !== "CANCELLED");
-  const past = reservations.filter((r) => new Date(r.date) < today || r.status === "COMPLETED");
+  const upcoming = reservations.filter(
+    (r) => new Date(r.date) >= today && !["CANCELLED", "COMPLETED", "NO_SHOW"].includes(r.status)
+  );
+  const past = reservations.filter(
+    (r) => new Date(r.date) < today || ["COMPLETED", "CANCELLED", "NO_SHOW"].includes(r.status)
+  );
 
   async function updateStatus(id: string, status: ReservationStatus) {
     try {
-      await fetch(`/api/reservations/${id}`, {
+      const res = await fetch(`/api/reservations/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+      if (!res.ok) throw new Error();
       setReservations((prev) => prev.map((r) => r.id === id ? { ...r, status } : r));
       toast.success("Durum güncellendi");
     } catch { toast.error("Güncelleme başarısız"); }

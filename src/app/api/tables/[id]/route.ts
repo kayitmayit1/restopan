@@ -22,6 +22,14 @@ export async function PATCH(
     const body = await req.json();
     const data = patchSchema.parse(body);
 
+    const existing = await db.table.findUnique({
+      where: { id },
+      include: { location: { select: { organizationId: true } } },
+    });
+    if (!existing || existing.location.organizationId !== session.user.organizationId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     const table = await db.table.update({ where: { id }, data });
     return NextResponse.json(table);
   } catch (error) {
@@ -35,9 +43,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user.organizationId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  const existing = await db.table.findUnique({
+    where: { id },
+    include: { location: { select: { organizationId: true } } },
+  });
+  if (!existing || existing.location.organizationId !== session.user.organizationId) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   await db.table.update({ where: { id }, data: { isActive: false } });
   return NextResponse.json({ success: true });
 }

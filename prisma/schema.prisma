@@ -27,6 +27,15 @@ model Organization {
   phone         String?
   email         String?
   website       String?
+  // Feature: Daily Special
+  dailySpecial       String?
+  dailySpecialActive Boolean  @default(false)
+  // Feature: Wi-Fi & Social
+  wifiName           String?
+  wifiPassword       String?
+  instagramUrl       String?
+  facebookUrl        String?
+  twitterUrl         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -40,6 +49,7 @@ model Organization {
   customers      Customer[]
   promotions     Promotion[]
   notifications  Notification[]
+  tableRequests  TableRequest[]
 }
 
 enum PlanType {
@@ -843,6 +853,21 @@ model Notification {
   type           String
   isRead         Boolean  @default(false)
   data           Json?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ─── TABLE REQUESTS ──────────────────────────────────────────────────────────
+
+model TableRequest {
+  id             String   @id @default(cuid())
+  organizationId String
+  tableId        String?
+  tableName      String?
+  type           String   // WAITER | BILL
+  paymentMethod  String?  // CASH | CARD
+  status         String   @default("PENDING")
   createdAt      DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)

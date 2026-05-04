@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatCurrency, cn } from "@/lib/utils";
+import Image from "next/image";
 import {
   Plus,
   Search,
@@ -18,6 +19,7 @@ import {
   Tag,
   Package,
   LayoutTemplate,
+  ImageIcon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -329,6 +331,21 @@ export function MenuManagement({
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <GripVertical className="w-3.5 h-3.5 text-muted-foreground/40 cursor-grab hidden sm:block" />
+                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0 hidden sm:block">
+                              {item.image ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <ImageIcon className="w-4 h-4 text-muted-foreground/30" />
+                                </div>
+                              )}
+                            </div>
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="font-medium">{item.name}</p>

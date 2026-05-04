@@ -9,24 +9,41 @@ export function useSSE(handlers: Record<string, EventHandler>) {
   handlersRef.current = handlers;
 
   useEffect(() => {
-    const es = new EventSource("/api/events");
+    let es: EventSource;
+    let retryTimeout: ReturnType<typeof setTimeout>;
+    let retryDelay = 1000;
 
-    const registered: string[] = [];
+    function connect() {
+      es = new EventSource("/api/events");
 
-    for (const event of Object.keys(handlersRef.current)) {
-      const fn = (e: MessageEvent) => {
-        try {
-          handlersRef.current[event]?.(JSON.parse(e.data));
-        } catch {
-          handlersRef.current[event]?.(e.data);
-        }
+      for (const event of Object.keys(handlersRef.current)) {
+        es.addEventListener(event, (e: MessageEvent) => {
+          try {
+            handlersRef.current[event]?.(JSON.parse(e.data));
+          } catch {
+            handlersRef.current[event]?.(e.data);
+          }
+        });
+      }
+
+      es.addEventListener("open", () => {
+        retryDelay = 1000;
+      });
+
+      es.onerror = () => {
+        es.close();
+        retryTimeout = setTimeout(() => {
+          retryDelay = Math.min(retryDelay * 2, 30000);
+          connect();
+        }, retryDelay);
       };
-      es.addEventListener(event, fn);
-      registered.push(event);
     }
 
+    connect();
+
     return () => {
-      es.close();
+      clearTimeout(retryTimeout);
+      es?.close();
     };
   }, []);
 }

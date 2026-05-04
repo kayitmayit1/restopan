@@ -53,7 +53,7 @@ export function RestoPanLogo({
     return (
       <span className={`inline-flex flex-col leading-none ${className}`}>
         <span style={{ color: textColor, fontWeight: 700, letterSpacing: "-0.02em" }}>
-          Resto<span style={{ color: "#c0392b" }}>Pan</span>
+          Resto<span style={{ color: "#c0392b" }}>PAN</span>
         </span>
       </span>
     );
@@ -75,7 +75,7 @@ export function RestoPanLogo({
             lineHeight: 1,
           }}
         >
-          Resto<span style={{ color: "#c0392b" }}>Pan</span>
+          Resto<span style={{ color: "#c0392b" }}>PAN</span>
         </span>
         <span
           style={{

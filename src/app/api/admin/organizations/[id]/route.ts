@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { addDays } from "date-fns";
 
-const SUPER_ADMIN_EMAIL = "ince.htce@gmail.com";
+const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL ?? "ince.htce@gmail.com";
 
 async function guardAdmin() {
   const session = await auth();

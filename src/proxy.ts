@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 const publicRoutes = ["/", "/giris", "/kayit", "/davet", "/menu", "/siparis", "/onboarding", "/hakkimizda", "/iletisim", "/destek", "/gizlilik", "/kullanim-kosullari", "/sss"];
-const SUPER_ADMIN_EMAIL = "ince.htce@gmail.com";
+const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL ?? "ince.htce@gmail.com";
 
 // Routes that require at least MANAGEMENT role (OWNER, ADMIN, MANAGER)
 const managementRoutes = [

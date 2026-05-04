@@ -79,7 +79,7 @@ export default function KayitPage() {
           <RestoPanLogo iconSize={48} />
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Starter Plan — Sonsuza Kadar Ücretsiz
+              Starter Plan —  Ücretsiz
             </p>
           </div>
         </div>

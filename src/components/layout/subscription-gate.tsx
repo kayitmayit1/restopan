@@ -82,7 +82,7 @@ export function SubscriptionGate({ reason }: Props) {
               <Zap className="w-4 h-4 text-primary" />
               <span className="font-semibold">Professional</span>
             </div>
-            <p className="text-2xl font-bold">₺799<span className="text-sm font-normal text-muted-foreground">/ay</span></p>
+            <p className="text-2xl font-bold">₺999<span className="text-sm font-normal text-muted-foreground">/ay</span></p>
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>50 masa · 10 kullanıcı</li>
               <li>3 şube · Tüm özellikler</li>

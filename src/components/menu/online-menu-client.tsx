@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, cn } from "@/lib/utils";
 import {
   ShoppingCart, Search, Minus, Plus, ChefHat, X,
-  Loader2, CheckCircle2, UtensilsCrossed,
+  Loader2, CheckCircle2, UtensilsCrossed, BellRing,
+  Banknote, CreditCard, Wifi, ExternalLink, Megaphone,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,7 +21,13 @@ interface CartItem {
 }
 
 interface Props {
-  organization: { id: string; name: string; logo?: string | null; currency: string };
+  organization: {
+    id: string; name: string; logo?: string | null; currency: string;
+    plan?: string;
+    dailySpecial?: string | null; dailySpecialActive?: boolean;
+    wifiName?: string | null; wifiPassword?: string | null;
+    instagramUrl?: string | null; facebookUrl?: string | null; twitterUrl?: string | null;
+  };
   categories: Array<{
     id: string; name: string;
     items: Array<{ id: string; name: string; description?: string | null; price: number; image?: string | null }>;
@@ -37,6 +45,8 @@ export function OnlineMenuClient({ organization, categories, locationId, tableId
   const [ordering, setOrdering] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [noteTarget, setNoteTarget] = useState<string | null>(null);
+  const [showBillModal, setShowBillModal] = useState(false);
+  const [requestingWaiter, setRequestingWaiter] = useState(false);
 
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
   const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -93,12 +103,47 @@ export function OnlineMenuClient({ organization, categories, locationId, tableId
     }
   }
 
+  async function callWaiter() {
+    setRequestingWaiter(true);
+    try {
+      await fetch("/api/public/table-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizationId: organization.id, tableId, tableName, type: "WAITER" }),
+      });
+      toast.success("Garson çağrıldı!");
+    } catch {
+      toast.error("İstek gönderilemedi");
+    } finally {
+      setRequestingWaiter(false);
+    }
+  }
+
+  async function requestBill(paymentMethod: "CASH" | "CARD") {
+    setShowBillModal(false);
+    try {
+      await fetch("/api/public/table-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizationId: organization.id, tableId, tableName, type: "BILL", paymentMethod }),
+      });
+      toast.success("Hesap isteği iletildi!");
+    } catch {
+      toast.error("İstek gönderilemedi");
+    }
+  }
+
   const filtered = categories
     .map((cat) => ({
       ...cat,
       items: cat.items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase())),
     }))
     .filter((cat) => (activeCat ? cat.id === activeCat : true) && cat.items.length > 0);
+
+  const hasTableRequests = organization.plan === "PROFESSIONAL" || organization.plan === "ENTERPRISE";
+  const hasSocial = organization.instagramUrl || organization.facebookUrl || organization.twitterUrl;
+  const hasWifi = organization.wifiName;
+  const hasFooter = hasSocial || hasWifi;
 
   // Order success screen
   if (orderNumber) {
@@ -155,7 +200,41 @@ export function OnlineMenuClient({ organization, categories, locationId, tableId
         </div>
       </div>
 
+      {/* Daily Special Banner */}
+      {organization.dailySpecialActive && organization.dailySpecial && (
+        <div className="bg-amber-500 text-white">
+          <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center gap-2.5 text-sm font-medium">
+            <Megaphone className="w-4 h-4 flex-shrink-0" />
+            <span>{organization.dailySpecial}</span>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+        {/* Waiter call buttons (only when at table AND plan supports it) */}
+        {tableId && hasTableRequests && (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={callWaiter}
+              disabled={requestingWaiter}
+              className="flex items-center justify-center gap-2 bg-white border rounded-xl py-3 text-sm font-semibold shadow-sm hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+            >
+              {requestingWaiter
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <BellRing className="w-4 h-4" />
+              }
+              Garson Çağır
+            </button>
+            <button
+              onClick={() => setShowBillModal(true)}
+              className="flex items-center justify-center gap-2 bg-white border rounded-xl py-3 text-sm font-semibold shadow-sm hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 transition-colors"
+            >
+              <Banknote className="w-4 h-4" />
+              Hesap İste
+            </button>
+          </div>
+        )}
+
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -202,40 +281,47 @@ export function OnlineMenuClient({ organization, categories, locationId, tableId
               {cat.items.map((item) => {
                 const inCart = cart.find((c) => c.menuItemId === item.id);
                 return (
-                  <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-[15px] leading-snug">{item.name}</p>
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
-                          {item.description}
-                        </p>
-                      )}
-                      <p className="text-primary font-bold mt-1.5">{formatCurrency(item.price)}</p>
-                    </div>
-                    {inCart ? (
-                      <div className="flex items-center gap-1.5 bg-primary/8 rounded-xl p-1 flex-shrink-0">
-                        <button
-                          onClick={() => updateQty(item.id, inCart.quantity - 1)}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg bg-white shadow-sm"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-sm font-bold w-5 text-center tabular-nums">{inCart.quantity}</span>
-                        <button
-                          onClick={() => updateQty(item.id, inCart.quantity + 1)}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                  <div key={item.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    {item.image && (
+                      <div className="relative w-full h-36">
+                        <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => addItem(item)}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white flex-shrink-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
                     )}
+                    <div className="p-4 flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-[15px] leading-snug">{item.name}</p>
+                        {item.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
+                            {item.description}
+                          </p>
+                        )}
+                        <p className="text-primary font-bold mt-1.5">{formatCurrency(item.price)}</p>
+                      </div>
+                      {inCart ? (
+                        <div className="flex items-center gap-1.5 bg-primary/8 rounded-xl p-1 flex-shrink-0">
+                          <button
+                            onClick={() => updateQty(item.id, inCart.quantity - 1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white shadow-sm"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-sm font-bold w-5 text-center tabular-nums">{inCart.quantity}</span>
+                          <button
+                            onClick={() => updateQty(item.id, inCart.quantity + 1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => addItem(item)}
+                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white flex-shrink-0"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -247,6 +333,49 @@ export function OnlineMenuClient({ organization, categories, locationId, tableId
           <div className="text-center py-16 text-muted-foreground">
             <UtensilsCrossed className="w-8 h-8 mx-auto mb-3 opacity-30" />
             <p className="text-sm">Ürün bulunamadı</p>
+          </div>
+        )}
+
+        {/* Wi-Fi & Social Footer */}
+        {hasFooter && (
+          <div className="mt-6 rounded-2xl bg-white shadow-sm p-4 space-y-3">
+            {hasWifi && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <Wifi className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Wi-Fi</p>
+                  <p className="text-sm font-semibold">{organization.wifiName}</p>
+                  {organization.wifiPassword && (
+                    <p className="text-xs text-muted-foreground font-mono">{organization.wifiPassword}</p>
+                  )}
+                </div>
+              </div>
+            )}
+            {hasSocial && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <p className="text-xs text-muted-foreground">Takip Et</p>
+                {organization.instagramUrl && (
+                  <a href={organization.instagramUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-50 text-pink-700 text-xs font-semibold hover:bg-pink-100 transition-colors">
+                    Instagram <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {organization.facebookUrl && (
+                  <a href={organization.facebookUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition-colors">
+                    Facebook <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {organization.twitterUrl && (
+                  <a href={organization.twitterUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-semibold hover:bg-gray-200 transition-colors">
+                    X (Twitter) <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -340,6 +469,38 @@ export function OnlineMenuClient({ organization, categories, locationId, tableId
                 Ödeme masada yapılır
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bill payment modal */}
+      {showBillModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 space-y-4">
+            <h3 className="font-bold text-lg text-center">Ödeme Şekli</h3>
+            <p className="text-sm text-muted-foreground text-center">Hesabınızı nasıl ödemek istersiniz?</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => requestBill("CASH")}
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+              >
+                <Banknote className="w-7 h-7 text-emerald-600" />
+                <span className="font-semibold text-emerald-700">Nakit</span>
+              </button>
+              <button
+                onClick={() => requestBill("CARD")}
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors"
+              >
+                <CreditCard className="w-7 h-7 text-blue-600" />
+                <span className="font-semibold text-blue-700">Kart</span>
+              </button>
+            </div>
+            <button
+              onClick={() => setShowBillModal(false)}
+              className="w-full py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              İptal
+            </button>
           </div>
         </div>
       )}
