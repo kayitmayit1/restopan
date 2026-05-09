@@ -2,50 +2,37 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 const publicRoutes = [
-  "/",
-  "/giris",
-  "/kayit",
-  "/davet",
-  "/menu",
-  "/siparis",
-  "/onboarding",
-  "/hakkimizda",
-  "/iletisim",
-  "/destek",
-  "/gizlilik",
-  "/kullanim-kosullari",
-  "/mesafeli-satis-sozlesmesi",
-  "/iade-politikasi",
-  "/sss",
+  "/", "/giris", "/kayit", "/davet", "/menu", "/siparis", 
+  "/onboarding", "/hakkimizda", "/iletisim", "/destek", 
+  "/gizlilik", "/kullanim-kosullari", "/mesafeli-satis-sozlesmesi", 
+  "/iade-politikasi", "/sss",
 ];
+
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL ?? "ince.htce@gmail.com";
 
-// Routes that require at least MANAGEMENT role (OWNER, ADMIN, MANAGER)
 const managementRoutes = [
-  "/dashboard/menu",
-  "/dashboard/envanter",
-  "/dashboard/tedarikciler",
-  "/dashboard/personel",
-  "/dashboard/analitik",
-  "/dashboard/finans",
-  "/dashboard/online-siparis",
-  "/dashboard/kampanyalar",
+  "/dashboard/menu", "/dashboard/envanter", "/dashboard/tedarikciler", 
+  "/dashboard/personel", "/dashboard/analitik", "/dashboard/finans", 
+  "/dashboard/online-siparis", "/dashboard/kampanyalar",
 ];
 
-// Routes that require OWNER or ADMIN only
-const ownerRoutes = [
-  "/dashboard/ayarlar",
-  "/dashboard/audit",
-];
-
-// Routes only for billing (OWNER only)
+const ownerRoutes = ["/dashboard/ayarlar", "/dashboard/audit"];
 const ownerBillingRoutes = ["/dashboard/ayarlar/fatura"];
-
 const MANAGEMENT_ROLES = ["OWNER", "ADMIN", "MANAGER"];
 const OWNER_ROLES = ["OWNER", "ADMIN"];
 
-const handler = auth((req) => {
+// Next.js'in tanıması için 'export default' kullanıyoruz
+export default auth((req) => {
   const { pathname } = req.nextUrl;
+
+  // Statik dosyaları ve manifest.json'ı yönlendirme dışı bırakır
+  if (
+    pathname.includes('.') || 
+    pathname.startsWith('/_next') || 
+    pathname === '/manifest.json'
+  ) {
+    return NextResponse.next();
+  }
 
   const isPublic = publicRoutes.some(
     (r) => pathname === r || pathname.startsWith(r + "/")
@@ -83,7 +70,6 @@ const handler = auth((req) => {
       return NextResponse.redirect(new URL("/dashboard/siparisler", req.url));
     }
 
-    // KITCHEN role: only mutfak + siparisler
     if (role === "KITCHEN") {
       const allowed = ["/dashboard/mutfak", "/dashboard/siparisler", "/dashboard/bildirimler", "/dashboard/ayarlar/profil"];
       const isAllowed = allowed.some((r) => pathname === r || pathname.startsWith(r + "/"));
@@ -96,16 +82,9 @@ const handler = auth((req) => {
   return NextResponse.next();
 });
 
-export { handler as proxy };
-
 export const config = {
   matcher: [
-    {
-      source: "/((?!api|_next/static|_next/image|favicon.png|public).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
-    },
+    // manifest.json ve noktayla biten tüm dosyaları filtre dışı bırakır
+    '/((?!api|_next/static|_next/image|manifest.json|favicon.ico|.*\\..*).*)',
   ],
 };
