@@ -5,6 +5,8 @@ import { AppSidebar } from "./app-sidebar";
 import { Menu, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { PlanType } from "@/lib/plan-limits";
+import { useSSE } from "@/hooks/use-events";
+import { toast } from "sonner";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -21,6 +23,17 @@ export function DashboardShell({ children, plan, trialDaysLeft, gateNode }: Dash
     const saved = localStorage.getItem("sidebar-collapsed");
     if (saved !== null) setSidebarCollapsed(saved === "true");
   }, []);
+
+  useSSE({
+    "order:ready": (data: unknown) => {
+      const d = data as { orderNumber: string; tableName?: string | null };
+      const table = d.tableName ? ` · ${d.tableName}` : "";
+      toast.success(`🍽 Sipariş Hazır — ${d.orderNumber}${table}`, {
+        description: "Mutfaktan çıktı, servis edilebilir",
+        duration: 10000,
+      });
+    },
+  });
 
   function toggleCollapsed() {
     const next = !sidebarCollapsed;

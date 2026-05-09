@@ -29,6 +29,7 @@ export async function PATCH(
         data: { status: "READY" },
         include: {
           location: { select: { organizationId: true } },
+          table: { select: { name: true } },
           items: {
             include: {
               menuItem: {
@@ -68,10 +69,21 @@ export async function PATCH(
         }
       }
 
+      const tableLabel = order.table?.name ? ` · ${order.table.name}` : "";
+      await db.notification.create({
+        data: {
+          organizationId: order.location.organizationId,
+          title: `Sipariş Hazır — ${order.orderNumber}${tableLabel}`,
+          body: "Mutfaktan çıktı, servise hazır.",
+          type: "ORDER",
+        },
+      });
+
       broadcast(order.location.organizationId, "order:ready", {
         id: order.id,
         orderNumber: order.orderNumber,
         tableId: order.tableId,
+        tableName: order.table?.name ?? null,
       });
     } else {
       // IN_PROGRESS veya diğer durum değişikliklerini bildir

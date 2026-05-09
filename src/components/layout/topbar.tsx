@@ -46,13 +46,13 @@ export function Topbar({ title, subtitle }: TopbarProps) {
       toast.info(notif.message, { description: notif.sub, duration: 5000 });
     },
     "order:ready": (data: unknown) => {
-      const d = data as { orderNumber: string };
-      const notif = addNotif({
+      const d = data as { orderNumber: string; tableName?: string | null };
+      addNotif({
         type: "order:ready",
         message: `Sipariş Hazır — ${d.orderNumber}`,
-        sub: "Mutfaktan çıktı, servis edilebilir",
+        sub: d.tableName ? `${d.tableName} · Servis edilebilir` : "Mutfaktan çıktı, servis edilebilir",
       });
-      toast.success(notif.message, { description: notif.sub, duration: 6000 });
+      // Toast DashboardShell'den geliyor, burada duplicate olmasın
     },
   });
 
