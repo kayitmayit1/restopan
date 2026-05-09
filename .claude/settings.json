@@ -46,7 +46,8 @@
       "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\api\\\\public\" -ErrorAction SilentlyContinue)",
       "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\dashboard\\\\online-siparis\" -ErrorAction SilentlyContinue)",
       "Bash(Remove-Item -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\components\\\\menu\\\\online-menu-client.tsx\" -ErrorAction SilentlyContinue)",
-      "PowerShell(\"Cache temizlendi\")"
+      "PowerShell(\"Cache temizlendi\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('dependencies',{}\\).get\\('next','?'\\)\\); print\\(d.get\\('dependencies',{}\\).get\\('next-auth','?'\\)\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar",

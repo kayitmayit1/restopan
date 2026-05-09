@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MenuPanel } from "./menu-panel";
 import { CartPanel } from "./cart-panel";
 import { TableSelector } from "./table-selector";
@@ -61,6 +62,12 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
   const [sendingOrder, setSendingOrder] = useState(false);
   const { selectedTableId, setTable, setActiveOrder, clearItems, cart, total, subtotal, discountAmount, orderType, notes, activeOrderId, activeOrderTotal } = usePOSStore();
   const isMobile = useIsMobile();
+  const router = useRouter();
+
+  function handlePaymentClose() {
+    setShowPayment(false);
+    router.refresh();
+  }
 
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
   const tot = total();
@@ -212,7 +219,7 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
 
       {showPayment && (
         <PaymentModal
-          onClose={() => setShowPayment(false)}
+          onClose={handlePaymentClose}
           organizationId={organizationId}
           locationId={locationId}
           staffId={staffId}
