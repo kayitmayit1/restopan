@@ -221,7 +221,7 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
       {/* Plan cards */}
       <div className="grid grid-cols-3 gap-4">
         {PLANS.map((p) => {
-          const isCurrent = plan === p.id;
+          const isCurrent = plan === p.id && status !== "TRIALING";
           const Icon = p.icon;
           return (
             <div
@@ -287,7 +287,7 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
                   {loading === p.id ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
                   ) : null}
-                  {plan === "STARTER" || status === "TRIALING" ? "Yükselt" : "Geçiş Yap"}
+                  {status === "TRIALING" ? "Satın Al" : plan === "STARTER" ? "Yükselt" : "Geçiş Yap"}
                 </Button>
               )}
             </div>
