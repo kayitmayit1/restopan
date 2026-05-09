@@ -163,14 +163,13 @@ function KayitContent() {
               {PLANS.map((p) => {
                 const Icon = p.icon;
                 return (
-                  <button
+                  <div
                     key={p.id}
-                    onClick={() => setSelectedPlan(p.id as "STARTER" | "PROFESSIONAL")}
                     className={cn(
-                      "relative text-left rounded-2xl border-2 p-5 transition-all hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "relative text-left rounded-2xl border-2 p-5 transition-all",
                       p.highlight
                         ? "border-primary bg-white shadow-md shadow-primary/10"
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                        : "border-gray-200 bg-white"
                     )}
                   >
                     {p.badge && (
@@ -196,24 +195,42 @@ function KayitContent() {
                     </ul>
                     {p.id === "PROFESSIONAL" ? (
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="rounded-xl bg-primary text-white text-center py-2 text-sm font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPlan("PROFESSIONAL");
+                            setSelectedProfessionalFlow("TRIAL");
+                          }}
+                          className="rounded-xl bg-primary text-white text-center py-2 text-sm font-semibold"
+                        >
                           14 Gün Dene
-                        </div>
-                        <div className="rounded-xl border border-primary/30 text-primary text-center py-2 text-sm font-semibold">
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPlan("PROFESSIONAL");
+                            setSelectedProfessionalFlow("BUY_NOW");
+                          }}
+                          className="rounded-xl border border-primary/30 text-primary text-center py-2 text-sm font-semibold"
+                        >
                           Satın Al
-                        </div>
+                        </button>
                       </div>
                     ) : (
-                      <div className={cn(
-                        "w-full text-center py-2 rounded-xl text-sm font-semibold transition-colors",
-                        p.highlight
-                          ? "bg-primary text-white"
-                          : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                      )}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlan(p.id as "STARTER")}
+                        className={cn(
+                          "w-full rounded-xl text-sm font-semibold transition-colors py-2",
+                          p.highlight
+                            ? "bg-primary text-white"
+                            : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                        )}
+                      >
                         {p.cta}
-                      </div>
+                      </button>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
