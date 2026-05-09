@@ -5,7 +5,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { TableStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Settings, RefreshCw, LayoutGrid } from "lucide-react";
+import { Plus, Settings, RefreshCw, LayoutGrid, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AddTableModal } from "./add-table-modal";
 import { useRouter } from "next/navigation";
@@ -82,13 +82,26 @@ export function TableFloorPlan({
   const router = useRouter();
   const [tables, setTables] = useState(initialTables);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [showAdd, setShowAdd] = useState(false);
+  const [showTableModal, setShowTableModal] = useState(false);
+  const [editingTable, setEditingTable] = useState<Table | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const sections = Array.from(new Set(tables.map((t) => t.section || "Genel")));
+
+  async function handleDelete(tableId: string) {
+    try {
+      const res = await fetch(`/api/tables/${tableId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setTables((prev) => prev.filter((t) => t.id !== tableId));
+      setSelectedTable(null);
+      toast.success("Masa silindi");
+    } catch {
+      toast.error("Masa silinemedi");
+    }
+  }
 
   async function updateStatus(tableId: string, status: TableStatus) {
     try {
@@ -150,7 +163,7 @@ export function TableFloorPlan({
             <Settings className="w-3.5 h-3.5" />
             {editMode ? "Düzenlemeyi Bitir" : "Düzenle"}
           </Button>
-          <Button size="sm" onClick={() => setShowAdd(true)} className="gap-2">
+          <Button size="sm" onClick={() => { setEditingTable(null); setShowTableModal(true); }} className="gap-2">
             <Plus className="w-3.5 h-3.5" />
             Masa Ekle
           </Button>
@@ -281,6 +294,26 @@ export function TableFloorPlan({
                   ))}
                 </div>
               </div>
+
+              {/* Edit / Delete */}
+              <div className="flex gap-2 pt-1 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 gap-1.5"
+                  onClick={() => { setEditingTable(selectedTable); setShowTableModal(true); }}
+                >
+                  <Pencil className="w-3.5 h-3.5" />Düzenle
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="flex-1 gap-1.5"
+                  onClick={() => handleDelete(selectedTable.id)}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />Sil
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="border rounded-xl p-8 text-center text-muted-foreground bg-muted/30">
@@ -291,13 +324,20 @@ export function TableFloorPlan({
         </div>
       </div>
 
-      {showAdd && (
+      {showTableModal && (
         <AddTableModal
           locationId={locationId}
-          onClose={() => setShowAdd(false)}
+          onClose={() => { setShowTableModal(false); setEditingTable(null); }}
+          editTable={editingTable ?? undefined}
           onAdded={(table) => {
             setTables((prev) => [...prev, { ...table, orders: [] } as unknown as Table]);
-            setShowAdd(false);
+            setShowTableModal(false);
+          }}
+          onEdited={(updated) => {
+            setTables((prev) => prev.map((t) => t.id === updated.id ? { ...t, name: updated.name, capacity: updated.capacity, section: updated.section } : t));
+            setSelectedTable((prev) => prev?.id === updated.id ? { ...prev, name: updated.name, capacity: updated.capacity, section: updated.section } : prev);
+            setShowTableModal(false);
+            setEditingTable(null);
           }}
         />
       )}

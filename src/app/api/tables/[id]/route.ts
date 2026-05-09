@@ -30,6 +30,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    if (data.name) {
+      const duplicate = await db.table.findFirst({
+        where: { locationId: existing.locationId, name: data.name, isActive: true, NOT: { id } },
+      });
+      if (duplicate) {
+        return NextResponse.json({ error: "Bu masa adı zaten kullanımda" }, { status: 409 });
+      }
+    }
+
     const table = await db.table.update({ where: { id }, data });
     return NextResponse.json(table);
   } catch (error) {

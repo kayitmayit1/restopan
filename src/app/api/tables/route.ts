@@ -28,6 +28,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(limitError("tables", check.limit, check.plan), { status: 403 });
     }
 
+    const duplicate = await db.table.findFirst({
+      where: { locationId: data.locationId, name: data.name, isActive: true },
+    });
+    if (duplicate) {
+      return NextResponse.json({ error: "Bu masa adı zaten kullanımda" }, { status: 409 });
+    }
+
     const table = await db.table.create({ data });
     return NextResponse.json(table, { status: 201 });
   } catch (error) {

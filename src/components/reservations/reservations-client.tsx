@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, formatDateTime } from "@/lib/utils";
 import { ReservationStatus, TableStatus } from "@prisma/client";
-import { Plus, Calendar, Clock, Users, Phone } from "lucide-react";
+import { Plus, Calendar, Clock, Users, Phone, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { AddReservationModal } from "./add-reservation-modal";
 
@@ -78,8 +78,12 @@ export function ReservationsClient({ reservations: initialRes, tables, locationI
                 </p>
                 <p className="flex items-center gap-1.5">
                   <Users className="w-3 h-3" />{r.guestCount} kişi
-                  {r.table && <span className="ml-1">· {r.table.name}</span>}
                 </p>
+                {r.table && (
+                  <p className="flex items-center gap-1.5">
+                    <LayoutGrid className="w-3 h-3" />{r.table.name}
+                  </p>
+                )}
                 {r.guestPhone && (
                   <p className="flex items-center gap-1.5"><Phone className="w-3 h-3" />{r.guestPhone}</p>
                 )}
