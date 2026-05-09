@@ -5,10 +5,9 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { TableStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Settings, RefreshCw, LayoutGrid, QrCode } from "lucide-react";
+import { Plus, Settings, RefreshCw, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { AddTableModal } from "./add-table-modal";
-import { QrModal } from "./qr-modal";
 import { useRouter } from "next/navigation";
 
 interface Order {
@@ -73,25 +72,21 @@ interface TableFloorPlanProps {
   tables: Table[];
   locationId: string;
   organizationId: string;
-  organizationSlug: string;
 }
 
 export function TableFloorPlan({
   tables: initialTables,
   locationId,
   organizationId,
-  organizationSlug,
 }: TableFloorPlanProps) {
   const router = useRouter();
   const [tables, setTables] = useState(initialTables);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const [showQr, setShowQr] = useState<Table | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
-  const appUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   const sections = Array.from(new Set(tables.map((t) => t.section || "Genel")));
 
@@ -265,17 +260,6 @@ export function TableFloorPlan({
                 </div>
               )}
 
-              {/* QR Code */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2"
-                onClick={() => setShowQr(selectedTable)}
-              >
-                <QrCode className="w-3.5 h-3.5" />
-                QR Kodu Göster
-              </Button>
-
               {/* Quick Status Change */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground">
@@ -306,14 +290,6 @@ export function TableFloorPlan({
           )}
         </div>
       </div>
-
-      {showQr && (
-        <QrModal
-          tableName={showQr.name}
-          url={`${appUrl}/menu/${organizationSlug}?table=${showQr.id}`}
-          onClose={() => setShowQr(null)}
-        />
-      )}
 
       {showAdd && (
         <AddTableModal

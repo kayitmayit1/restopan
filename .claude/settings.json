@@ -37,7 +37,16 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\" -Recurse -Depth 2)",
       "Bash(Select-Object FullName)",
       "Bash(git ls-files *)",
-      "Bash(gh repo *)"
+      "Bash(gh repo *)",
+      "Bash(npx tsc *)",
+      "Bash(xargs grep -l \"qrCode\\\\|QR\\\\|table.*id\")",
+      "Bash(xargs grep -l \"table-request\")",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\menu\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\siparis\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\api\\\\public\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\app\\\\dashboard\\\\online-siparis\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Force \"c:\\\\Users\\\\okury\\\\Desktop\\\\restoran\\\\src\\\\components\\\\menu\\\\online-menu-client.tsx\" -ErrorAction SilentlyContinue)",
+      "PowerShell(\"Cache temizlendi\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\okury\\Desktop\\restoran\\src\\app\\admin\\organizasyonlar",

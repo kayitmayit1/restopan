@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, ShoppingCart, UtensilsCrossed, LayoutGrid, ChefHat,
-  BookOpen, Package, Users, Calendar, BarChart3, DollarSign, Globe,
+  BookOpen, Package, Users, Calendar, BarChart3, DollarSign,
   Truck, Tag, Settings, ChevronDown, Store, Bell, LogOut, Vault, ClipboardList, Lock,
   PanelLeftOpen, PanelLeftClose, X,
 } from "lucide-react";
@@ -71,7 +71,6 @@ const navigation: NavSection[] = [
     title: "Büyüme",
     roles: MANAGEMENT,
     items: [
-      { label: "Online Sipariş", href: "/dashboard/online-siparis", icon: Globe, roles: MANAGEMENT, feature: "online-order" },
       { label: "Kampanyalar", href: "/dashboard/kampanyalar", icon: Tag, roles: MANAGEMENT, feature: "campaigns" },
     ],
   },

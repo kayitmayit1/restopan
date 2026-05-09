@@ -209,10 +209,10 @@ export default function LandingPage() {
             </div>
 
             {/* App UI */}
-            <div className="flex h-[480px] overflow-hidden select-none">
+            <div className="flex h-[360px] md:h-[480px] overflow-hidden select-none">
 
               {/* Sidebar */}
-              <aside className="w-52 bg-gray-950 flex-shrink-0 flex flex-col py-4 px-3 gap-1">
+              <aside className="hidden md:flex w-52 bg-gray-950 flex-shrink-0 flex-col py-4 px-3 gap-1">
                 {/* Logo */}
                 <div className="flex items-center gap-2 px-2 pb-4 mb-1 border-b border-white/10">
                   <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
@@ -261,10 +261,10 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 p-4 overflow-hidden flex flex-col gap-3">
+                <div className="flex-1 p-3 md:p-4 overflow-hidden flex flex-col gap-2 md:gap-3">
 
                   {/* Stats row */}
-                  <div className="grid grid-cols-4 gap-2.5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                     {[
                       { label: "Bugünkü Ciro", value: "₺8.240", change: "+12%", up: true, color: "text-emerald-600", bg: "bg-emerald-50" },
                       { label: "Toplam Sipariş", value: "47", change: "+8%", up: true, color: "text-blue-600", bg: "bg-blue-50" },
@@ -323,7 +323,7 @@ export default function LandingPage() {
                     </div>
 
                     {/* Live tables */}
-                    <div className="w-44 bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex flex-col">
+                    <div className="hidden md:flex w-44 bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex-col">
                       <p className="text-xs font-semibold text-gray-800 mb-2">Canlı Masalar</p>
                       <div className="grid grid-cols-3 gap-1.5 flex-1">
                         {[
@@ -355,7 +355,7 @@ export default function LandingPage() {
                     </div>
 
                     {/* Recent orders */}
-                    <div className="w-48 bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex flex-col">
+                    <div className="hidden md:flex w-48 bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex-col">
                       <p className="text-xs font-semibold text-gray-800 mb-2">Son Siparişler</p>
                       <div className="space-y-1.5 flex-1">
                         {[

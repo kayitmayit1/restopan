@@ -34,7 +34,6 @@ export default async function MasalarPage() {
           tables={tables}
           locationId={locationId || ""}
           organizationId={session.user.organizationId}
-          organizationSlug={session.user.organizationSlug || ""}
         />
       </div>
     </div>

@@ -61,7 +61,13 @@ export function AddShiftModal({ locationId, members, onClose, onSaved }: AddShif
           <div className="space-y-2">
             <Label>Personel</Label>
             <Select value={form.staffId} onValueChange={(v) => v !== null && setForm({ ...form, staffId: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue>
+                  {members.find((m) => m.user.id === form.staffId)?.user.name ||
+                   members.find((m) => m.user.id === form.staffId)?.user.email ||
+                   "Personel seçin"}
+                </SelectValue>
+              </SelectTrigger>
               <SelectContent>
                 {members.map((m) => (
                   <SelectItem key={m.user.id} value={m.user.id}>
