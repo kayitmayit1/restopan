@@ -128,7 +128,7 @@ export function AddTableModal({ locationId, onClose, onAdded, editTable, onEdite
             <div className="space-y-2">
               <Label>Şekil</Label>
               <div className="flex gap-2">
-                {["RECTANGLE", "CIRCLE", "SQUARE"].map((s) => (
+                {(["RECTANGLE", "CIRCLE", "SQUARE"] as TableShape[]).map((s) => (
                   <button
                     key={s}
                     type="button"
