@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2, Lock, Zap, ArrowDownCircle } from "lucide-react";
-import { toast } from "sonner";
 
 interface Props {
   reason: "expired" | "past_due" | "canceled";
-  planName: string;
 }
 
 const MESSAGES = {
@@ -27,19 +27,37 @@ const MESSAGES = {
 
 export function SubscriptionGate({ reason }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [billingTermsChecked, setBillingTermsChecked] = useState(false);
   const msg = MESSAGES[reason];
 
   async function handleUpgrade(plan: "PROFESSIONAL") {
+    if (!billingTermsChecked) {
+      toast.error("Ödemeye geçmeden önce sözleşme onay kutusunu işaretleyin.");
+      return;
+    }
     setLoading(plan);
     try {
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, acceptedTerms: true as const }),
       });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else throw new Error();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        /* empty */
+      }
+      if (!res.ok) {
+        toast.error(typeof data.error === "string" ? data.error : "Ödeme sayfasına gidilemedi.");
+        return;
+      }
+      if (data.url) {
+        window.location.assign(data.url);
+      } else {
+        toast.error("Ödeme sayfası adresi alınamadı.");
+      }
     } catch {
       toast.error("Yönlendirme başarısız");
     } finally {
@@ -73,6 +91,31 @@ export function SubscriptionGate({ reason }: Props) {
           <p className="text-muted-foreground">{msg.body}</p>
         </div>
 
+        <label className="flex items-start gap-2 text-left text-xs text-muted-foreground cursor-pointer mx-auto max-w-sm">
+          <input
+            type="checkbox"
+            checked={billingTermsChecked}
+            onChange={(e) => setBillingTermsChecked(e.target.checked)}
+            className="mt-0.5 rounded border-gray-300"
+          />
+          <span>
+            Ödeme yapmadan önce{" "}
+            <Link href="/kullanim-kosullari" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+              kullanım koşulları
+            </Link>{" "}
+            ve{" "}
+            <Link
+              href="/mesafeli-satis-sozlesmesi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              mesafeli satış ön bilgilendirme ile sözleşme metinleri
+            </Link>
+            ’ni okudum, onaylıyorum.
+          </span>
+        </label>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="border-2 border-primary rounded-2xl p-5 text-left space-y-3 relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -92,7 +135,7 @@ export function SubscriptionGate({ reason }: Props) {
               className="w-full"
               size="sm"
               onClick={() => handleUpgrade("PROFESSIONAL")}
-              disabled={!!loading}
+              disabled={!!loading || !billingTermsChecked}
             >
               {loading === "PROFESSIONAL" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
               Seç

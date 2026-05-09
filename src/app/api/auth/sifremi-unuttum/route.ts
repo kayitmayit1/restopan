@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { randomBytes } from "crypto";
 import { Resend } from "resend";
 import { rateLimit } from "@/lib/rate-limit";
+import { publicAppUrl } from "@/lib/public-app-url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM ?? "RestoPan <onboarding@resend.dev>";
@@ -40,7 +41,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const appUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const appUrl =
+    process.env.NEXTAUTH_URL?.trim().replace(/\/$/, "") || publicAppUrl();
   const resetUrl = `${appUrl}/sifre-sifirla?token=${token}&email=${encodeURIComponent(email.toLowerCase())}`;
 
   await resend.emails.send({

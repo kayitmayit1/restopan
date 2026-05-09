@@ -52,7 +52,7 @@ export default async function DashboardLayout({
     <DashboardShell
       plan={(org?.plan ?? "STARTER") as "STARTER" | "PROFESSIONAL" | "ENTERPRISE"}
       trialDaysLeft={trialBanner?.daysLeft}
-      gateNode={gateReason ? <SubscriptionGate reason={gateReason} planName={org?.plan ?? "STARTER"} /> : undefined}
+      gateNode={gateReason ? <SubscriptionGate reason={gateReason} /> : undefined}
     >
       {children}
     </DashboardShell>

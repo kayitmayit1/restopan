@@ -14,6 +14,10 @@ model Organization {
   slug          String   @unique
   logo          String?
   plan          PlanType @default(STARTER)
+  /// Kullanım koşulları ve mesafeli satış öncesi bilgilendirme metinleri için onay zamanı (ücretli süreçlerde kullanılır)
+  termsAcceptedAt DateTime?
+  /// Kayıt sırasında "Satın Al" seçildiyken ödeme tamamlanmadan ücretsiz deneme verilmez
+  buyNowCheckoutPending Boolean @default(false)
   planExpiresAt DateTime?
   currency      String   @default("TRY")
   timezone      String   @default("Europe/Istanbul")

@@ -3,10 +3,11 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { initCheckoutForm, PLANS, type PaidPlan } from "@/lib/iyzico";
 import { randomUUID } from "crypto";
+import { canManageBilling, signingOrgId } from "@/lib/billing-guard";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user.organizationId) {
+  if (!session?.user.organizationId || !canManageBilling(session)) {
     return NextResponse.redirect(new URL("/giris", req.url));
   }
 
@@ -16,8 +17,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard/ayarlar/fatura", req.url));
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const planConfig = PLANS[plan];
+  if (!planConfig.planCode) {
+    return NextResponse.redirect(
+      new URL("/dashboard/ayarlar/fatura?error=checkout_config", req.url)
+    );
+  }
+
+  const publicOrigin = req.nextUrl.origin;
 
   const user = await db.user.findUnique({ where: { id: session.user.id } });
   const org = await db.organization.findUnique({
@@ -28,6 +35,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/giris", req.url));
   }
 
+  if (!org.termsAcceptedAt) {
+    return NextResponse.redirect(
+      new URL("/dashboard/ayarlar/fatura?error=terms_required", req.url)
+    );
+  }
+
+  const callbackSig = signingOrgId(org.id);
+  if (!callbackSig) {
+    return NextResponse.redirect(
+      new URL("/dashboard/ayarlar/fatura?error=checkout_config", req.url)
+    );
+  }
+
   const nameParts = (user.name ?? org.name).split(" ");
   const firstName = nameParts[0] ?? "Müşteri";
   const lastName = nameParts.slice(1).join(" ") || org.name;
@@ -36,7 +56,7 @@ export async function GET(req: NextRequest) {
     const result = await initCheckoutForm({
       locale: "tr",
       conversationId: randomUUID(),
-      callbackUrl: `${appUrl}/api/billing/callback?orgId=${org.id}`,
+      callbackUrl: `${publicOrigin}/api/billing/callback?orgId=${encodeURIComponent(org.id)}&sig=${encodeURIComponent(callbackSig)}`,
       pricingPlanReferenceCode: planConfig.planCode,
       subscriptionInitialStatus: "ACTIVE",
       customer: {

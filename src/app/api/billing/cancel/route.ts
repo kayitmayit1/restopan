@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { cancelSubscription } from "@/lib/iyzico";
+import { canManageBilling } from "@/lib/billing-guard";
 
 export async function POST() {
   const session = await auth();
-  if (!session?.user.organizationId) {
+  if (!session?.user.organizationId || !canManageBilling(session)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -19,7 +20,12 @@ export async function POST() {
   }
 
   try {
-    await cancelSubscription(sub.iyzicoSubId);
+    const result = (await cancelSubscription(sub.iyzicoSubId)) as { status?: string };
+    const st = result?.status?.toLowerCase?.() ?? "";
+    if (st !== "success") {
+      console.warn("[billing/cancel] iyzico unexpected status:", result);
+      return NextResponse.json({ error: "İyzico abonelik iptali başarısız" }, { status: 502 });
+    }
 
     await db.subscription.update({
       where: { id: sub.id },

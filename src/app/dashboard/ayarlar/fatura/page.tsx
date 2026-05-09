@@ -28,10 +28,11 @@ export default async function FaturaPage() {
       <div className="p-6">
         <BillingClient
           plan={org.plan}
-          status={sub?.status ?? "TRIALING"}
+          status={sub?.status ?? "ACTIVE"}
           trialDaysLeft={trialDaysLeft}
           periodEnd={sub?.currentPeriodEnd?.toISOString() ?? null}
           hasIyzicoSubscription={!!sub?.iyzicoSubId}
+          termsAcceptedAt={org.termsAcceptedAt?.toISOString() ?? null}
         />
       </div>
     </div>

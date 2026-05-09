@@ -80,6 +80,7 @@ const schema = z.object({
   organizationName: z.string().min(2),
   plan: z.enum(["STARTER", "PROFESSIONAL"]).optional().default("STARTER"),
   professionalFlow: z.enum(["TRIAL", "BUY_NOW"]).optional().default("TRIAL"),
+  acceptedTerms: z.literal(true),
 });
 
 export async function POST(req: NextRequest) {
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const isPro = data.plan === "PROFESSIONAL";
     const isProTrial = isPro && data.professionalFlow === "TRIAL";
+    const isBuyNow = isPro && data.professionalFlow === "BUY_NOW";
     const periodEnd = new Date(now);
     if (isProTrial) {
       periodEnd.setDate(periodEnd.getDate() + 14);
@@ -134,6 +136,8 @@ export async function POST(req: NextRequest) {
           name: data.organizationName,
           slug,
           plan: isProTrial ? "PROFESSIONAL" : "STARTER",
+          termsAcceptedAt: now,
+          buyNowCheckoutPending: isBuyNow,
           members: { create: { userId: user.id, role: "OWNER" } },
           locations: { create: { name: "Ana Şube", isActive: true } },
         },

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { publicAppUrl } from "@/lib/public-app-url";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
 import {
   ChefHat,
@@ -128,9 +129,9 @@ export default async function LandingPage() {
       { "@type": "Offer", price: "0", priceCurrency: "TRY", name: "Starter" },
       { "@type": "Offer", price: "999", priceCurrency: "TRY", name: "Professional" },
     ],
-    url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    url: publicAppUrl(),
     inLanguage: "tr",
-    author: { "@type": "Organization", name: "RestoPAN", url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000" },
+    author: { "@type": "Organization", name: "RestoPAN", url: publicAppUrl() },
   };
 
   return (
@@ -577,6 +578,8 @@ export default async function LandingPage() {
             <Link href="/destek" className="hover:text-white transition-colors">Destek</Link>
             <Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik</Link>
             <Link href="/kullanim-kosullari" className="hover:text-white transition-colors">Kullanım Koşulları</Link>
+            <Link href="/mesafeli-satis-sozlesmesi" className="hover:text-white transition-colors">Mesafeli Satış</Link>
+            <Link href="/iade-politikasi" className="hover:text-white transition-colors">İade Politikası</Link>
           </div>
           <p className="text-xs text-gray-500">© {new Date().getFullYear()} RestoPAN. Tüm hakları saklıdır.</p>
         </div>

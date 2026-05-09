@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
 import { NetworkStatus } from "@/components/network-status";
+import { publicAppUrl } from "@/lib/public-app-url";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 
 const roboto = Roboto({
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   authors: [{ name: "RestoPAN" }],
   creator: "RestoPAN",
   publisher: "RestoPAN",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(publicAppUrl()),
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",

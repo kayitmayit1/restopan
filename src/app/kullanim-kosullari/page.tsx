@@ -47,6 +47,16 @@ export default function KullanimKosullariPage() {
               <li>Ücretli planlar aylık olarak iyzico üzerinden tahsil edilir.</li>
               <li>İptal, mevcut dönem sonunda geçerli olur. Kısmi iade yapılmaz.</li>
               <li>Fiyat değişiklikleri 30 gün öncesinden bildirilir.</li>
+              <li>
+                Mesafeli satış ve iade ayrıntıları:{" "}
+                <Link href="/mesafeli-satis-sozlesmesi" className="text-primary hover:underline">
+                  Mesafeli Satış Sözleşmesi
+                </Link>
+                {" · "}
+                <Link href="/iade-politikasi" className="text-primary hover:underline">
+                  İade Politikası
+                </Link>
+              </li>
             </ul>
           </section>
 
@@ -102,6 +112,8 @@ export default function KullanimKosullariPage() {
             <Link href="/iletisim" className="hover:text-foreground">İletişim</Link>
             <Link href="/destek" className="hover:text-foreground">Destek</Link>
             <Link href="/gizlilik" className="hover:text-foreground">Gizlilik</Link>
+            <Link href="/mesafeli-satis-sozlesmesi" className="hover:text-foreground">Mesafeli Satış</Link>
+            <Link href="/iade-politikasi" className="hover:text-foreground">İade Politikası</Link>
           </div>
         </div>
       </footer>

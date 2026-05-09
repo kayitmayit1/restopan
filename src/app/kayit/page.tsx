@@ -21,6 +21,9 @@ const schema = z.object({
   email: z.string().email("Geçerli bir e-posta girin"),
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
   organizationName: z.string().min(2, "Restoran adı en az 2 karakter olmalı"),
+  acceptedTerms: z.boolean().refine((v) => v === true, {
+    message: "Kullanım koşulları ve mesafeli satış bilgilendirmesini onaylamanız gerekiyor.",
+  }),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -84,6 +87,7 @@ function KayitContent() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: { acceptedTerms: false },
   });
 
   async function onSubmit(data: FormData) {
@@ -95,8 +99,8 @@ function KayitContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           selectedPlan === "PROFESSIONAL"
-            ? { ...data, plan: "PROFESSIONAL", professionalFlow: selectedProfessionalFlow }
-            : data
+            ? { ...data, plan: "PROFESSIONAL" as const, professionalFlow: selectedProfessionalFlow }
+            : { ...data, plan: "STARTER" as const }
         ),
       });
 
@@ -113,13 +117,13 @@ function KayitContent() {
         redirect: false,
       });
       if (signInResult?.error) {
-        toast.error("HesabÄ±nÄ±z oluÅŸtu ancak otomatik giriÅŸ baÅŸarÄ±sÄ±z oldu.");
+        toast.error("Hesabınız oluştu ancak otomatik giriş başarısız oldu.");
         router.push("/giris");
         return;
       }
 
       if (result.requiresCheckout) {
-        toast.success("HesabÄ±nÄ±z hazÄ±r. Ã–deme adÄ±mÄ±na yÃ¶nlendiriliyorsunuz.");
+        toast.success("Hesabınız hazır. Ödeme adımına yönlendiriliyorsunuz.");
         window.location.href = "/api/billing/checkout-form?plan=PROFESSIONAL";
         return;
       }
@@ -334,6 +338,22 @@ function KayitContent() {
                     <Input id="password" type="password" placeholder="En az 6 karakter" {...register("password")} />
                     {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
                   </div>
+                  <label className="flex items-start gap-2 text-xs text-muted-foreground leading-snug cursor-pointer select-none">
+                    <input type="checkbox" className="mt-0.5 rounded border-gray-300" {...register("acceptedTerms")} />
+                    <span>
+                      <Link href="/kullanim-kosullari" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        Kullanım Koşulları
+                      </Link>
+                      ’nı ve{" "}
+                      <Link href="/mesafeli-satis-sozlesmesi" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        Mesafeli Satış ön bilgilendirme ile sözleşme metinleri
+                      </Link>
+                      metinlerini okudum, onaylıyorum.
+                    </span>
+                  </label>
+                  {errors.acceptedTerms && (
+                    <p className="text-xs text-destructive">{errors.acceptedTerms.message}</p>
+                  )}
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     {selectedCta}

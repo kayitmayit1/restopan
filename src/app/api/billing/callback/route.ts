@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { retrieveCheckoutForm, PLANS } from "@/lib/iyzico";
+import { verifyBillingCallbackOrg } from "@/lib/billing-guard";
 
 export async function POST(req: NextRequest) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = req.nextUrl.origin;
 
   try {
     const formData = await req.formData();
@@ -46,7 +47,13 @@ export async function POST(req: NextRequest) {
         ? "TRIALING"
         : "ACTIVE";
 
-    const orgId = new URL(req.url).searchParams.get("orgId");
+    const failedUrl = new URL("/dashboard/ayarlar/fatura?error=payment_failed", appUrl);
+
+    const orgId =
+      new URL(req.url).searchParams.get("orgId") ??
+      new URL(req.url).searchParams.get("org") ??
+      null;
+    const sig = new URL(req.url).searchParams.get("sig");
 
     const existing = await db.subscription.findFirst({
       where: { iyzicoSubId: subRefCode },
@@ -64,9 +71,19 @@ export async function POST(req: NextRequest) {
       });
       await db.organization.update({
         where: { id: existing.organizationId },
-        data: { plan },
+        data: {
+          plan,
+          buyNowCheckoutPending: false,
+        },
       });
-    } else if (orgId) {
+    } else if (!orgId || !verifyBillingCallbackOrg(orgId, sig)) {
+      return NextResponse.redirect(failedUrl);
+    } else {
+      const orgExists = await db.organization.findUnique({ where: { id: orgId }, select: { id: true } });
+      if (!orgExists) {
+        return NextResponse.redirect(failedUrl);
+      }
+
       const orgSub = await db.subscription.findFirst({
         where: { organizationId: orgId },
         orderBy: { createdAt: "desc" },
@@ -97,7 +114,7 @@ export async function POST(req: NextRequest) {
       }
       await db.organization.update({
         where: { id: orgId },
-        data: { plan },
+        data: { plan, buyNowCheckoutPending: false },
       });
     }
 

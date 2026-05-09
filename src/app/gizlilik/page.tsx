@@ -26,9 +26,9 @@ export default function GizlilikPage() {
           <section>
             <h2 className="text-lg font-semibold mb-3">1. Veri Sorumlusu</h2>
             <p className="text-muted-foreground">
-              RestoPAN, Türkiye merkezli bir restoran yönetim yazılımı hizmetidir. Bu politika kapsamında veri sorumlusu
-              sıfatıyla hareket eden şirketimiz, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca
-              kişisel verilerinizi işlemektedir.
+              RestoPAN, Türkiye merkezli bir restoran yönetim yazılımıdır. Kişisel verilerin işlenmesinden sorumlu taraf, bu hizmeti
+              hukukça tanınan sıfatlarıyla sürdüren <strong>bireysel işletici</strong> sıfatında veri sorumlusudur ve 6698 sayılı Kişisel Verilerin
+              Korunması Kanunu (KVKK) uyarınca verilerinizi işlemektedir. Şirkete geçilmesi halinde bu bildirim güncellenir.
             </p>
           </section>
 
@@ -111,6 +111,8 @@ export default function GizlilikPage() {
             <Link href="/iletisim" className="hover:text-foreground">İletişim</Link>
             <Link href="/destek" className="hover:text-foreground">Destek</Link>
             <Link href="/kullanim-kosullari" className="hover:text-foreground">Kullanım Koşulları</Link>
+            <Link href="/mesafeli-satis-sozlesmesi" className="hover:text-foreground">Mesafeli Satış</Link>
+            <Link href="/iade-politikasi" className="hover:text-foreground">İade Politikası</Link>
           </div>
         </div>
       </footer>

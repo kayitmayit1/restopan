@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,10 +69,19 @@ interface Props {
   trialDaysLeft: number | null;
   periodEnd: string | null;
   hasIyzicoSubscription: boolean;
+  termsAcceptedAt: string | null;
 }
 
-export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzicoSubscription }: Props) {
+export function BillingClient({
+  plan,
+  status,
+  trialDaysLeft,
+  periodEnd,
+  hasIyzicoSubscription,
+  termsAcceptedAt,
+}: Props) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [billingTermsChecked, setBillingTermsChecked] = useState(!!termsAcceptedAt);
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -85,38 +95,102 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
     } else if (error === "payment_failed") {
       toast.error("Ödeme başarısız. Lütfen tekrar deneyin.");
       router.replace("/dashboard/ayarlar/fatura");
+    } else if (error === "checkout_config") {
+      toast.error("Ödeme planı yapılandırması eksik. Destek ile iletişime geçin.");
+      router.replace("/dashboard/ayarlar/fatura");
     } else if (error === "1") {
       toast.error("Bir hata oluştu. Lütfen destek ile iletişime geçin.");
       router.replace("/dashboard/ayarlar/fatura");
+    } else if (error === "terms_required") {
+      toast.error("Ücretli işlemden önce sözleşme metinlerini onaylamanız gerekir.");
+      router.replace("/dashboard/ayarlar/fatura");
     }
   }, [searchParams, router]);
+
+  useEffect(() => {
+    setBillingTermsChecked(!!termsAcceptedAt);
+  }, [termsAcceptedAt]);
 
   async function handleUpgrade(targetPlan: "PROFESSIONAL" | "ENTERPRISE") {
     if (targetPlan === "ENTERPRISE") {
       window.location.href = "mailto:satis@restopan.com?subject=Enterprise Plan Talebi";
       return;
     }
+    if (!termsAcceptedAt && !billingTermsChecked) {
+      toast.error("Devam etmek için aşağıdaki sözleşme onay kutusunu işaretleyin.");
+      return;
+    }
     setLoading(targetPlan);
     try {
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: targetPlan }),
+        body: JSON.stringify({
+          plan: targetPlan,
+          ...(!termsAcceptedAt && billingTermsChecked ? { acceptedTerms: true as const } : {}),
+        }),
       });
-      const data = await res.json();
+      let data: { url?: string; success?: boolean; error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        /* empty */
+      }
+      if (!res.ok) {
+        toast.error(
+          typeof data.error === "string" ? data.error : "Ödeme sayfasına geçiş başarısız."
+        );
+        return;
+      }
       if (data.url) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       } else if (data.success) {
         toast.success("Plan güncellendi");
         window.location.reload();
       } else {
-        throw new Error();
+        toast.error("Ödeme sayfası adresi alınamadı. Lütfen tekrar deneyin.");
       }
     } catch {
       toast.error("İşlem başarısız. Lütfen tekrar deneyin.");
     } finally {
       setLoading(null);
     }
+  }
+
+  async function handleStartTrial() {
+    if (!termsAcceptedAt && !billingTermsChecked) {
+      toast.error("Denemeye başlamadan önce sözleşme onay kutusunu işaretleyin.");
+      return;
+    }
+    setLoading("trial");
+    try {
+      const res = await fetch("/api/billing/trial", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          !termsAcceptedAt && billingTermsChecked ? { acceptedTerms: true as const } : {}
+        ),
+      });
+      if (res.ok) {
+        toast.success("14 günlük deneme başladı!");
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const msg =
+          typeof data.error === "string" ? data.error : "İşlem başarısız.";
+        toast.error(msg);
+      }
+    } catch {
+      toast.error("İşlem başarısız. Lütfen tekrar deneyin.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  function handleBuyNow() {
+    handleUpgrade("PROFESSIONAL");
   }
 
   async function handleCancel() {
@@ -126,13 +200,15 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
     }
     setLoading("cancel");
     try {
-      const res = await fetch("/api/billing/cancel", { method: "POST" });
-      const data = await res.json();
+      const res = await fetch("/api/billing/cancel", { method: "POST", credentials: "same-origin" });
+      const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: unknown };
       if (data.success) {
         toast.success("Abonelik iptal edildi. Starter plana geçildi.");
         window.location.reload();
       } else {
-        throw new Error(data.error);
+        const msg =
+          typeof data.error === "string" ? data.error : "İptal işlemi başarısız.";
+        toast.error(msg);
       }
     } catch {
       toast.error("İptal işlemi başarısız.");
@@ -154,6 +230,33 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
 
   return (
     <div className="max-w-4xl space-y-6">
+      {!termsAcceptedAt && (
+        <label className="flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm text-muted-foreground cursor-pointer">
+          <input
+            type="checkbox"
+            checked={billingTermsChecked}
+            onChange={(e) => setBillingTermsChecked(e.target.checked)}
+            className="mt-1 rounded border-gray-300"
+          />
+          <span>
+            Ücretli plan ve ödeme süreçlerine devam etmek için{" "}
+            <Link href="/kullanim-kosullari" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+              Kullanım Koşulları
+            </Link>{" "}
+            ile{" "}
+            <Link
+              href="/mesafeli-satis-sozlesmesi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              Mesafeli Satış ön bilgilendirme ile sözleşme metinleri
+            </Link>
+            ’ni okudum ve kabul ediyorum.
+          </span>
+        </label>
+      )}
+
       {/* Current plan summary */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
@@ -278,6 +381,29 @@ export function BillingClient({ plan, status, trialDaysLeft, periodEnd, hasIyzic
                 >
                   Teklif Alın
                 </Button>
+              ) : plan === "STARTER" && p.id === "PROFESSIONAL" ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleStartTrial}
+                    disabled={!!loading}
+                  >
+                    {loading === "trial" ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : null}
+                    Denemeyi Başlat
+                  </Button>
+                  <Button
+                    className="w-full"
+                    onClick={handleBuyNow}
+                    disabled={!!loading}
+                  >
+                    {loading === "PROFESSIONAL" ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : null}
+                    Hemen Satın Al
+                  </Button>
+                </div>
               ) : (
                 <Button
                   className="w-full"

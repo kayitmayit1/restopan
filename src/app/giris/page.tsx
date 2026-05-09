@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Eye, EyeOff, Loader2, Zap } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
 
 const schema = z.object({
@@ -31,7 +31,6 @@ export default function GirisPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
 
   const {
     register,
@@ -39,27 +38,9 @@ export default function GirisPage() {
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  async function loginAsDemo() {
-    setDemoLoading(true);
-    try {
-      const res = await fetch("/api/demo", { method: "POST" });
-      const { email, password } = await res.json();
-      const result = await signIn("credentials", { email, password, redirect: false });
-      if (result?.error) {
-        toast.error("Demo girişi başarısız");
-      } else {
-        router.push("/dashboard");
-        router.refresh();
-      }
-    } catch {
-      toast.error("Bağlantı hatası");
-    } finally {
-      setDemoLoading(false);
-    }
-  }
-
   async function onSubmit(data: FormData) {
     setLoading(true);
+
     try {
       const result = await signIn("credentials", {
         email: data.email,
@@ -97,10 +78,12 @@ export default function GirisPage() {
               Hesabınıza giriş yaparak devam edin
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">E-posta</Label>
+
                 <Input
                   id="email"
                   type="email"
@@ -108,6 +91,7 @@ export default function GirisPage() {
                   autoComplete="email"
                   {...register("email")}
                 />
+
                 {errors.email && (
                   <p className="text-xs text-destructive">
                     {errors.email.message}
@@ -117,6 +101,7 @@ export default function GirisPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password">Şifre</Label>
+
                 <div className="relative">
                   <Input
                     id="password"
@@ -125,6 +110,7 @@ export default function GirisPage() {
                     autoComplete="current-password"
                     {...register("password")}
                   />
+
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -137,6 +123,7 @@ export default function GirisPage() {
                     )}
                   </button>
                 </div>
+
                 {errors.password && (
                   <p className="text-xs text-destructive">
                     {errors.password.message}
@@ -149,18 +136,26 @@ export default function GirisPage() {
                   {loading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : null}
+
                   Giriş Yap
                 </Button>
               </div>
+
               <div className="text-right">
-                <a href="/sifremi-unuttum" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                <a
+                  href="/sifremi-unuttum"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
                   Şifremi Unuttum
                 </a>
               </div>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Hesabınız yok mu? </span>
+              <span className="text-muted-foreground">
+                Hesabınız yok mu?{" "}
+              </span>
+
               <a
                 href="/kayit"
                 className="text-primary font-medium hover:underline"
@@ -170,16 +165,6 @@ export default function GirisPage() {
             </div>
           </CardContent>
         </Card>
-
-        <button
-          type="button"
-          onClick={loginAsDemo}
-          disabled={demoLoading}
-          className="w-full flex items-center justify-center gap-2 border border-dashed border-primary/40 text-primary/80 hover:text-primary hover:border-primary/60 text-sm font-medium py-2.5 rounded-xl transition-colors"
-        >
-          {demoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-          Demo Hesabıyla Giriş Yap
-        </button>
       </div>
     </div>
   );

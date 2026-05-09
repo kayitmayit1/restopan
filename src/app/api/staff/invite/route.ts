@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { sendStaffInvite } from "@/lib/email";
 import { z } from "zod";
 import { checkLimit, limitError } from "@/lib/plan-limits-server";
+import { publicAppUrl } from "@/lib/public-app-url";
 
 const schema = z.object({
   organizationId: z.string(),
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     select: { name: true },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = publicAppUrl();
   const inviteUrl = `${appUrl}/davet?token=${invite.token}`;
 
   let emailSent = false;

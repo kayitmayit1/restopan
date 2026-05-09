@@ -166,6 +166,8 @@ export default function SSSPage() {
             <Link href="/destek" className="hover:text-foreground">Destek</Link>
             <Link href="/gizlilik" className="hover:text-foreground">Gizlilik</Link>
             <Link href="/kullanim-kosullari" className="hover:text-foreground">Kullanım Koşulları</Link>
+            <Link href="/mesafeli-satis-sozlesmesi" className="hover:text-foreground">Mesafeli Satış</Link>
+            <Link href="/iade-politikasi" className="hover:text-foreground">İade Politikası</Link>
           </div>
         </div>
       </footer>

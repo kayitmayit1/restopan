@@ -1,5 +1,19 @@
+/** iyzico: `IYZICO_BASE_URL` açıksa doğrudan kullanılır; değilse `IYZICO_SANDBOX=true` → sandbox URI. Sandbox anahtarları yalnızca sandbox adresiyle çalışır (canlı: api.iyzipay.com). */
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Iyzipay = require("iyzipay");
+
+const IYZICO_LIVE_URI = "https://api.iyzipay.com";
+const IYZICO_SANDBOX_URI = "https://sandbox-api.iyzipay.com";
+
+export function resolveIyzicoBaseUrl(): string {
+  const explicit = process.env.IYZICO_BASE_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+  const sandbox = process.env.IYZICO_SANDBOX?.toLowerCase().trim();
+  if (sandbox === "1" || sandbox === "true" || sandbox === "yes") {
+    return IYZICO_SANDBOX_URI;
+  }
+  return IYZICO_LIVE_URI;
+}
 
 let _client: InstanceType<typeof Iyzipay> | null = null;
 
@@ -8,7 +22,7 @@ function getClient() {
     _client = new Iyzipay({
       apiKey: process.env.IYZICO_API_KEY!,
       secretKey: process.env.IYZICO_SECRET_KEY!,
-      uri: process.env.IYZICO_BASE_URL ?? "https://api.iyzipay.com",
+      uri: resolveIyzicoBaseUrl(),
     });
   }
   return _client;

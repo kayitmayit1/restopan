@@ -14,49 +14,19 @@
   "categories": ["business", "food"],
   "icons": [
     {
-      "src": "/api/pwa/icon?size=72",
-      "sizes": "72x72",
+      "src": "/favicon.png",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/api/pwa/icon?size=96",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/api/pwa/icon?size=128",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/api/pwa/icon?size=144",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/api/pwa/icon?size=152",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/api/pwa/icon?size=192",
+      "src": "/favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/api/pwa/icon?size=384",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/api/pwa/icon?size=512",
+      "src": "/favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -68,28 +38,36 @@
       "short_name": "POS",
       "description": "Yeni sipariş aç, ödeme al",
       "url": "/dashboard/pos",
-      "icons": [{ "src": "/api/pwa/icon?size=96", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        { "src": "/favicon.png", "sizes": "96x96", "type": "image/png" }
+      ]
     },
     {
       "name": "Mutfak Ekranı",
       "short_name": "Mutfak",
       "description": "Gelen siparişleri takip et",
       "url": "/dashboard/mutfak",
-      "icons": [{ "src": "/api/pwa/icon?size=96", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        { "src": "/favicon.png", "sizes": "96x96", "type": "image/png" }
+      ]
     },
     {
       "name": "Masalar",
       "short_name": "Masalar",
       "description": "Masa durumlarını görüntüle",
       "url": "/dashboard/masalar",
-      "icons": [{ "src": "/api/pwa/icon?size=96", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        { "src": "/favicon.png", "sizes": "96x96", "type": "image/png" }
+      ]
     },
     {
       "name": "Dashboard",
       "short_name": "Özet",
       "description": "Günlük özet ve istatistikler",
       "url": "/dashboard",
-      "icons": [{ "src": "/api/pwa/icon?size=96", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        { "src": "/favicon.png", "sizes": "96x96", "type": "image/png" }
+      ]
     }
   ]
 }

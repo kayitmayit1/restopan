@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
+import { publicAppUrl } from "@/lib/public-app-url";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "http://restopan.com";
+const BASE = publicAppUrl();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -11,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/destek`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/gizlilik`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
     { url: `${BASE}/kullanim-kosullari`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
+    { url: `${BASE}/mesafeli-satis-sozlesmesi`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
+    { url: `${BASE}/iade-politikasi`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
     { url: `${BASE}/kayit`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/kayit/pro`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/giris`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },

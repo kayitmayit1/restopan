@@ -9,6 +9,5 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  return NextResponse.json({ url: `${appUrl}/dashboard/ayarlar/fatura` });
+  return NextResponse.json({ url: "/dashboard/ayarlar/fatura" });
 }
