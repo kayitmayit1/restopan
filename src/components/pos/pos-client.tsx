@@ -107,33 +107,50 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
     if (!requireTable()) return;
     setSendingOrder(true);
     try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locationId,
-          organizationId,
-          tableId: selectedTableId,
-          staffId,
-          type: orderType,
-          notes,
-          items: cart.map((item) => ({
-            menuItemId: item.menuItemId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            notes: item.notes,
-            modifiers: item.modifiers,
-          })),
-          subtotal: subtotal(),
-          discountAmount: discountAmount(),
-          totalAmount: tot,
-        }),
-      });
-      if (!res.ok) throw new Error();
-      const order = await res.json();
-      setActiveOrder(order.id, order.totalAmount);
-      clearItems();
-      toast.success("Sipariş mutfağa gönderildi");
+      const items = cart.map((item) => ({
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        notes: item.notes,
+        modifiers: item.modifiers,
+      }));
+
+      if (activeOrderId) {
+        // Masada açık sipariş var — yeni ürünleri mevcut siparişe ekle
+        const res = await fetch(`/api/orders/${activeOrderId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items }),
+        });
+        if (!res.ok) throw new Error();
+        const order = await res.json();
+        setActiveOrder(activeOrderId, order.totalAmount);
+        clearItems();
+        toast.success("Ürünler siparişe eklendi");
+      } else {
+        // Yeni sipariş oluştur
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            locationId,
+            organizationId,
+            tableId: selectedTableId,
+            staffId,
+            type: orderType,
+            notes,
+            items,
+            subtotal: subtotal(),
+            discountAmount: discountAmount(),
+            totalAmount: tot,
+          }),
+        });
+        if (!res.ok) throw new Error();
+        const order = await res.json();
+        setActiveOrder(order.id, order.totalAmount);
+        clearItems();
+        toast.success("Sipariş mutfağa gönderildi");
+      }
     } catch {
       toast.error("Sipariş gönderilemedi");
     } finally {

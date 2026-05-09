@@ -63,6 +63,63 @@ export async function PATCH(
     return NextResponse.json(updated);
   }
 
+  // Add items to existing order (e.g. table ordering more food)
+  if (body.items && Array.isArray(body.items) && body.items.length > 0) {
+    const menuItemIds = [...new Set(body.items.map((i: { menuItemId: string }) => i.menuItemId))] as string[];
+    const dbItems = await db.menuItem.findMany({
+      where: { id: { in: menuItemIds }, organizationId: session.user.organizationId, isActive: true },
+      select: { id: true, price: true },
+    });
+    if (dbItems.length !== menuItemIds.length) {
+      return NextResponse.json({ error: "Geçersiz ürün" }, { status: 400 });
+    }
+    const priceMap = new Map(dbItems.map((m) => [m.id, m.price]));
+    type IncomingItem = { menuItemId: string; quantity: number; notes?: string; modifiers?: { modifierId: string; price: number }[] };
+    const validatedItems = (body.items as IncomingItem[]).map((item) => ({
+      ...item,
+      unitPrice: priceMap.get(item.menuItemId)!,
+    }));
+
+    const addedSubtotal = validatedItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+    const newSubtotal = order.subtotal + addedSubtotal;
+    const newTotal = Math.max(0, newSubtotal - order.discountAmount);
+    const newTax = newTotal * 0.18;
+
+    const updated = await db.$transaction(async (tx) => {
+      for (const item of validatedItems) {
+        await tx.orderItem.create({
+          data: {
+            orderId: id,
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * item.quantity,
+            notes: item.notes,
+            status: "PREPARING",
+            sentToKitchen: true,
+            ...(item.modifiers?.length ? {
+              modifiers: { create: item.modifiers.map((m) => ({ modifierId: m.modifierId, price: m.price })) },
+            } : {}),
+          },
+        });
+      }
+      await tx.kitchenTicket.create({ data: { orderId: id, status: "PENDING", priority: 0 } });
+      return tx.order.update({
+        where: { id },
+        data: { subtotal: newSubtotal, taxAmount: newTax, totalAmount: newTotal },
+      });
+    });
+
+    broadcast(session.user.organizationId, "order:updated", {
+      id: updated.id,
+      status: updated.status,
+      orderNumber: updated.orderNumber,
+      totalAmount: updated.totalAmount,
+    });
+
+    return NextResponse.json(updated);
+  }
+
   // Status-only update
   const updated = await db.order.update({
     where: { id },

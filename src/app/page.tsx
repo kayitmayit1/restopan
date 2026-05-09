@@ -481,12 +481,21 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={plan.href}
-                  className={`block text-center py-2.5 rounded-xl font-semibold text-sm transition-colors ${plan.highlight ? "bg-primary text-white hover:bg-primary/90" : "border border-gray-200 hover:bg-gray-50"}`}
-                >
-                  {plan.cta}
-                </Link>
+                {plan.href.startsWith("mailto:") ? (
+                  <a
+                    href={plan.href}
+                    className={`block text-center py-2.5 rounded-xl font-semibold text-sm transition-colors ${plan.highlight ? "bg-primary text-white hover:bg-primary/90" : "border border-gray-200 hover:bg-gray-50"}`}
+                  >
+                    {plan.cta}
+                  </a>
+                ) : (
+                  <Link
+                    href={plan.href}
+                    className={`block text-center py-2.5 rounded-xl font-semibold text-sm transition-colors ${plan.highlight ? "bg-primary text-white hover:bg-primary/90" : "border border-gray-200 hover:bg-gray-50"}`}
+                  >
+                    {plan.cta}
+                  </Link>
+                )}
               </div>
             ))}
           </div>
