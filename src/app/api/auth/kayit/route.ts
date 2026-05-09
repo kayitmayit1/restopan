@@ -79,6 +79,7 @@ const schema = z.object({
   password: z.string().min(6),
   organizationName: z.string().min(2),
   plan: z.enum(["STARTER", "PROFESSIONAL"]).optional().default("STARTER"),
+  professionalFlow: z.enum(["TRIAL", "BUY_NOW"]).optional().default("TRIAL"),
 });
 
 export async function POST(req: NextRequest) {
@@ -115,8 +116,9 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
     const isPro = data.plan === "PROFESSIONAL";
+    const isProTrial = isPro && data.professionalFlow === "TRIAL";
     const periodEnd = new Date(now);
-    if (isPro) {
+    if (isProTrial) {
       periodEnd.setDate(periodEnd.getDate() + 14);
     } else {
       periodEnd.setFullYear(periodEnd.getFullYear() + 100);
@@ -131,7 +133,7 @@ export async function POST(req: NextRequest) {
         data: {
           name: data.organizationName,
           slug,
-          plan: data.plan,
+          plan: isProTrial ? "PROFESSIONAL" : "STARTER",
           members: { create: { userId: user.id, role: "OWNER" } },
           locations: { create: { name: "Ana Şube", isActive: true } },
         },
@@ -140,14 +142,17 @@ export async function POST(req: NextRequest) {
       await tx.subscription.create({
         data: {
           organizationId: organization.id,
-          status: isPro ? "TRIALING" : "ACTIVE",
+          status: isProTrial ? "TRIALING" : "ACTIVE",
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,
         },
       });
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      requiresCheckout: isPro && data.professionalFlow === "BUY_NOW",
+    });
   } catch (error) {
     console.error("[REGISTER]", error);
     if (error instanceof z.ZodError) {

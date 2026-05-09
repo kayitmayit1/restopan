@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/lib/auth";
 import { RestoPanLogo } from "@/components/ui/restopan-logo";
 import {
   ChefHat,
@@ -82,6 +83,7 @@ const PLANS = [
     ],
     cta: "14 Gün Ücretsiz Dene",
     href: "/kayit/pro",
+    buyHref: "/kayit?plan=pro&mode=buy",
     highlight: true,
     badge: "En Popüler",
   },
@@ -111,7 +113,10 @@ const TESTIMONIALS = [
   { name: "Mevlüt Toraman", role: "Kafe Sahibi · İzmir", quote: "Kurulum kısa sürdü zaten yönlendiriyor sistem, hazır menü şablonu işimi çok kolaylaştırdı kendi ürünlerimi hazır menü şablonuna ekledim", stars: 5 },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth();
+  const authHref = session ? "/dashboard" : "/giris";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -145,7 +150,7 @@ export default function LandingPage() {
             <Link href="/destek" className="hover:text-foreground transition-colors">Destek</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/giris" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+            <Link href={authHref} className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
               Giriş Yap
             </Link>
             <Link
@@ -180,7 +185,7 @@ export default function LandingPage() {
           <Link href="/kayit" className="bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm">
             Ücretsiz Başla <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link href="/giris" className="border border-gray-200 text-gray-700 font-medium px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm">
+          <Link href={authHref} className="border border-gray-200 text-gray-700 font-medium px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm">
             Giriş Yap
           </Link>
         </div>
@@ -481,7 +486,22 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                {plan.href.startsWith("mailto:") ? (
+                {plan.buyHref ? (
+                  <div className="space-y-2">
+                    <Link
+                      href={plan.href}
+                      className="block text-center py-2.5 rounded-xl font-semibold text-sm transition-colors bg-primary text-white hover:bg-primary/90"
+                    >
+                      {plan.cta}
+                    </Link>
+                    <Link
+                      href={plan.buyHref}
+                      className="block text-center py-2.5 rounded-xl font-semibold text-sm transition-colors border border-primary/25 text-primary hover:bg-primary/5"
+                    >
+                      Satın Al
+                    </Link>
+                  </div>
+                ) : plan.href.startsWith("mailto:") ? (
                   <a
                     href={plan.href}
                     className={`block text-center py-2.5 rounded-xl font-semibold text-sm transition-colors ${plan.highlight ? "bg-primary text-white hover:bg-primary/90" : "border border-gray-200 hover:bg-gray-50"}`}
@@ -506,10 +526,15 @@ export default function LandingPage() {
       <section className="py-24">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight mb-4">Hemen başlayın</h2>
-          <p className="text-muted-foreground mb-8">Professional planı 14 gün ücretsiz deneyin. Kredi kartı gerekmez, istediğiniz zaman iptal.</p>
-          <Link href="/kayit/pro" className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-8 py-4 rounded-xl hover:bg-primary/90 transition-colors">
-            14 Gün Ücretsiz Dene <ArrowRight className="w-4 h-4" />
-          </Link>
+          <p className="text-muted-foreground mb-8">Professional planı ister 14 gün ücretsiz deneyin, ister hesabınızı oluşturup doğrudan ödeme adımına geçin.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/kayit/pro" className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-8 py-4 rounded-xl hover:bg-primary/90 transition-colors">
+              14 Gün Ücretsiz Dene <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/kayit?plan=pro&mode=buy" className="inline-flex items-center gap-2 border border-primary/25 text-primary font-semibold px-8 py-4 rounded-xl hover:bg-primary/5 transition-colors">
+              Satın Al <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ interface SettingsClientProps { organization: Organization; locations: Location[
 export function SettingsClient({ organization: initialOrg, locations: initialLocations }: SettingsClientProps) {
   const [org, setOrg] = useState(initialOrg);
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const [locations, setLocations] = useState(initialLocations);
   const [saving, setSaving] = useState(false);
   const [showAddLocation, setShowAddLocation] = useState(false);
@@ -99,7 +101,13 @@ export function SettingsClient({ organization: initialOrg, locations: initialLoc
               <span className={`px-2.5 py-0.5 rounded-full text-sm font-semibold ${plan.color}`}>{plan.label}</span>
             </div>
           </div>
-          <Button variant="outline" size="sm">Planı Yükselt</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/dashboard/ayarlar/fatura")}
+          >
+            Planı Yükselt
+          </Button>
         </CardContent>
       </Card>
 

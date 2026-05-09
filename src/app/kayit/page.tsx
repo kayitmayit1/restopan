@@ -24,6 +24,7 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
+type ProfessionalFlow = "TRIAL" | "BUY_NOW";
 
 const PLANS = [
   {
@@ -58,7 +59,8 @@ const PLANS = [
       "Online & paket sipariş sayfası",
       "WhatsApp destek — 1 saat yanıt",
     ],
-    cta: "14 Gün Ücretsiz Dene",
+    trialCta: "14 Gün Ücretsiz Dene",
+    buyCta: "Satın Al",
   },
 ];
 
@@ -73,8 +75,10 @@ export default function KayitPage() {
 function KayitContent() {
   const searchParams = useSearchParams();
   const initialPlan = searchParams.get("plan") === "pro" ? "PROFESSIONAL" : null;
+  const initialProfessionalFlow = searchParams.get("mode") === "buy" ? "BUY_NOW" : "TRIAL";
 
   const [selectedPlan, setSelectedPlan] = useState<"STARTER" | "PROFESSIONAL" | null>(initialPlan as "PROFESSIONAL" | null);
+  const [selectedProfessionalFlow, setSelectedProfessionalFlow] = useState<ProfessionalFlow>(initialProfessionalFlow);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -89,7 +93,11 @@ function KayitContent() {
       const res = await fetch("/api/auth/kayit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(selectedPlan === "PROFESSIONAL" ? { ...data, plan: "PROFESSIONAL" } : data),
+        body: JSON.stringify(
+          selectedPlan === "PROFESSIONAL"
+            ? { ...data, plan: "PROFESSIONAL", professionalFlow: selectedProfessionalFlow }
+            : data
+        ),
       });
 
       if (!res.ok) {
@@ -98,7 +106,24 @@ function KayitContent() {
         return;
       }
 
-      await signIn("credentials", { email: data.email, password: data.password, redirect: false });
+      const result = await res.json();
+      const signInResult = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+      if (signInResult?.error) {
+        toast.error("HesabÄ±nÄ±z oluÅŸtu ancak otomatik giriÅŸ baÅŸarÄ±sÄ±z oldu.");
+        router.push("/giris");
+        return;
+      }
+
+      if (result.requiresCheckout) {
+        toast.success("HesabÄ±nÄ±z hazÄ±r. Ã–deme adÄ±mÄ±na yÃ¶nlendiriliyorsunuz.");
+        window.location.href = "/api/billing/checkout-form?plan=PROFESSIONAL";
+        return;
+      }
+
       router.push("/onboarding");
       toast.success(selectedPlan === "PROFESSIONAL" ? "Hoş geldiniz! 14 günlük denemeniz başladı." : "Hoş geldiniz! Restoranınızı kuralım.");
     } finally {
@@ -107,6 +132,13 @@ function KayitContent() {
   }
 
   const plan = PLANS.find((p) => p.id === selectedPlan);
+  const isProfessional = selectedPlan === "PROFESSIONAL";
+  const selectedCta =
+    isProfessional
+      ? selectedProfessionalFlow === "BUY_NOW"
+        ? "Hesabı Oluştur ve Ödemeye Geç"
+        : "14 Gün Ücretsiz Dene"
+      : plan?.cta;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 p-4">
@@ -162,14 +194,25 @@ function KayitContent() {
                         </li>
                       ))}
                     </ul>
-                    <div className={cn(
-                      "w-full text-center py-2 rounded-xl text-sm font-semibold transition-colors",
-                      p.highlight
-                        ? "bg-primary text-white"
-                        : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                    )}>
-                      {p.cta}
-                    </div>
+                    {p.id === "PROFESSIONAL" ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-xl bg-primary text-white text-center py-2 text-sm font-semibold">
+                          14 Gün Dene
+                        </div>
+                        <div className="rounded-xl border border-primary/30 text-primary text-center py-2 text-sm font-semibold">
+                          Satın Al
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={cn(
+                        "w-full text-center py-2 rounded-xl text-sm font-semibold transition-colors",
+                        p.highlight
+                          ? "bg-primary text-white"
+                          : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                      )}>
+                        {p.cta}
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -183,7 +226,10 @@ function KayitContent() {
           /* ── Adım 2: Kayıt formu ── */
           <div className="space-y-4">
             <button
-              onClick={() => setSelectedPlan(null)}
+              onClick={() => {
+                setSelectedPlan(null);
+                setSelectedProfessionalFlow(initialProfessionalFlow);
+              }}
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -196,8 +242,14 @@ function KayitContent() {
                 plan.highlight ? "bg-primary/8 border-primary/20 text-primary" : "bg-slate-50 border-slate-200 text-slate-600"
               )}>
                 <plan.icon className="w-4 h-4 flex-shrink-0" />
-                <span>{plan.name} — {plan.price}</span>
-                <span className="text-xs font-normal opacity-70">{plan.sub}</span>
+                <span>
+                  {isProfessional
+                    ? `${plan.name} — ${selectedProfessionalFlow === "BUY_NOW" ? "Direkt Satın Al" : plan.price}`
+                    : `${plan.name} — ${plan.price}`}
+                </span>
+                <span className="text-xs font-normal opacity-70">
+                  {isProfessional && selectedProfessionalFlow === "BUY_NOW" ? "· Hemen ödeme sayfasına geçiş" : plan.sub}
+                </span>
               </div>
             )}
 
@@ -205,13 +257,45 @@ function KayitContent() {
               <CardHeader className="space-y-1 pb-4">
                 <CardTitle className="text-xl">Hesap Oluştur</CardTitle>
                 <CardDescription>
-                  {selectedPlan === "PROFESSIONAL"
-                    ? "14 gün boyunca tüm özellikleri ücretsiz kullanın"
+                  {isProfessional
+                    ? selectedProfessionalFlow === "BUY_NOW"
+                      ? "Bilgilerinizi tamamlayın, hesabınız oluşsun ve doğrudan ödeme sayfasına geçin"
+                      : "14 gün boyunca tüm özellikleri ücretsiz kullanın"
                     : "Kredi kartı gerekmez, süre sınırı yok"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  {isProfessional && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProfessionalFlow("TRIAL")}
+                        className={cn(
+                          "rounded-xl border px-3 py-3 text-left transition-colors",
+                          selectedProfessionalFlow === "TRIAL"
+                            ? "border-primary bg-primary/8 text-primary"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        )}
+                      >
+                        <p className="text-sm font-semibold">14 Gün Ücretsiz Dene</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Kart bilgisi vermeden tüm özellikleri test edin</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProfessionalFlow("BUY_NOW")}
+                        className={cn(
+                          "rounded-xl border px-3 py-3 text-left transition-colors",
+                          selectedProfessionalFlow === "BUY_NOW"
+                            ? "border-primary bg-primary/8 text-primary"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        )}
+                      >
+                        <p className="text-sm font-semibold">Satın Al</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Kaydı tamamlayıp doğrudan ödeme sayfasına geçin</p>
+                      </button>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="organizationName">Restoran Adı</Label>
                     <Input id="organizationName" placeholder="Örn: Lezzet Durağı" {...register("organizationName")} />
@@ -234,7 +318,7 @@ function KayitContent() {
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    {plan?.cta}
+                    {selectedCta}
                   </Button>
                 </form>
                 <div className="mt-6 text-center text-sm">
