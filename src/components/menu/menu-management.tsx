@@ -302,18 +302,18 @@ export function MenuManagement({
                 </div>
               ) : (
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
+                  <thead className="bg-primary/8 border-b border-primary/15">
                     <tr>
-                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs">
+                      <th className="text-left px-4 py-2.5 font-semibold text-primary/80 text-xs uppercase tracking-wide">
                         Ürün
                       </th>
-                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs hidden md:table-cell">
+                      <th className="text-left px-4 py-2.5 font-semibold text-primary/80 text-xs uppercase tracking-wide hidden md:table-cell">
                         Fiyat
                       </th>
-                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs hidden lg:table-cell">
+                      <th className="text-left px-4 py-2.5 font-semibold text-primary/80 text-xs uppercase tracking-wide hidden lg:table-cell">
                         Maliyet
                       </th>
-                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs">
+                      <th className="text-left px-4 py-2.5 font-semibold text-primary/80 text-xs uppercase tracking-wide">
                         Durum
                       </th>
                       <th className="px-4 py-2.5 w-16" />

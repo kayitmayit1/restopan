@@ -156,10 +156,10 @@ export function StaffClient({ members, shifts, locationId, organizationId }: Sta
         <TabsContent value="shifts" className="mt-4">
           <div className="rounded-xl border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50">
+              <thead className="bg-primary/8 border-b border-primary/15">
                 <tr>
                   {["Tarih", "Personel", "Başlangıç", "Bitiş", "Durum", "Giriş/Çıkış"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-primary/80 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>

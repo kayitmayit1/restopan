@@ -180,10 +180,10 @@ export function InventoryClient({
 
           <div className="rounded-xl border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50">
+              <thead className="bg-primary/8 border-b border-primary/15">
                 <tr>
                   {["Malzeme", "Kategori", "Stok", "Min. Stok", "Birim Maliyet", "Toplam Değer", ""].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-primary/80 uppercase tracking-wide">
                       {h}
                     </th>
                   ))}
@@ -258,10 +258,10 @@ export function InventoryClient({
         <TabsContent value="movements" className="mt-4">
           <div className="rounded-xl border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50">
+              <thead className="bg-primary/8 border-b border-primary/15">
                 <tr>
                   {["Tarih", "Malzeme", "İşlem", "Miktar", "Not"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-primary/80 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -162,10 +162,10 @@ export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
       {/* Table */}
       <div className="rounded-xl border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-muted/50">
+          <thead className="bg-primary/8 border-b border-primary/15">
             <tr>
               {["Sipariş No", "Masa/Tür", "Ürünler", "Durum", "Ödeme", "Tutar", "Tarih", ""].map((h) => (
-                <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">
+                <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-primary/80 uppercase tracking-wide">
                   {h}
                 </th>
               ))}

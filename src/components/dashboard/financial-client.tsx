@@ -155,10 +155,10 @@ export function FinancialClient({ thisMonth, lastMonth, expenses: initialExpense
 
           <div className="rounded-xl border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50">
+              <thead className="bg-primary/8 border-b border-primary/15">
                 <tr>
                   {["Tarih", "Kategori", "Açıklama", "Tutar"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-primary/80 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
