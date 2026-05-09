@@ -132,6 +132,7 @@ function KayitContent() {
   }
 
   const plan = PLANS.find((p) => p.id === selectedPlan);
+  const PlanIcon = plan?.icon;
   const isProfessional = selectedPlan === "PROFESSIONAL";
   const selectedCta =
     isProfessional
@@ -258,7 +259,7 @@ function KayitContent() {
                 "flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium",
                 plan.highlight ? "bg-primary/8 border-primary/20 text-primary" : "bg-slate-50 border-slate-200 text-slate-600"
               )}>
-                <plan.icon className="w-4 h-4 flex-shrink-0" />
+                {PlanIcon ? <PlanIcon className="w-4 h-4 flex-shrink-0" /> : null}
                 <span>
                   {isProfessional
                     ? `${plan.name} — ${selectedProfessionalFlow === "BUY_NOW" ? "Direkt Satın Al" : plan.price}`
