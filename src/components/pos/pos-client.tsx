@@ -86,8 +86,18 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
     setShowTableSelector(false);
   }
 
+  function requireTable(): boolean {
+    if (orderType === "DINE_IN" && !selectedTableId) {
+      toast.error("Masa seçilmedi", { description: "Siparişi göndermeden önce masa seçin." });
+      setShowTableSelector(true);
+      return false;
+    }
+    return true;
+  }
+
   async function handleSendOrder() {
     if (cart.length === 0) return;
+    if (!requireTable()) return;
     setSendingOrder(true);
     try {
       const res = await fetch("/api/orders", {
@@ -140,7 +150,7 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
       {!isMobile && (
         <div className="w-96 flex-shrink-0 border-l bg-background flex flex-col">
           <CartPanel
-            onCheckout={() => setShowPayment(true)}
+            onCheckout={() => { if (requireTable()) setShowPayment(true); }}
             onSendOrder={handleSendOrder}
             onTableSelect={() => setShowTableSelector(true)}
             tables={tables}
@@ -180,7 +190,7 @@ export function POSClient({ categories, tables, organizationId, locationId, staf
             </div>
             <div className="flex-1 overflow-y-auto">
               <CartPanel
-                onCheckout={() => { setShowMobileCart(false); setShowPayment(true); }}
+                onCheckout={() => { setShowMobileCart(false); if (requireTable()) setShowPayment(true); }}
                 onSendOrder={() => { handleSendOrder(); setShowMobileCart(false); }}
                 onTableSelect={() => { setShowMobileCart(false); setShowTableSelector(true); }}
                 tables={tables}
