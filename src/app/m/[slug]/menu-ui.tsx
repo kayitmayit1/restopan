@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Wifi, Instagram, Facebook, X, Clock, Flame, ChevronUp } from "lucide-react";
+import { Wifi, Instagram, Facebook, Clock, Flame, ChevronUp } from "lucide-react";
 
 interface Variant {
   id: string;
@@ -240,7 +240,7 @@ export function MenuUI({ org, categories, tableName }: Props) {
                 className="w-10 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors"
                 aria-label="X / Twitter"
               >
-                <X className="w-5 h-5 text-gray-700" />
+                <span className="text-sm font-bold text-gray-700">𝕏</span>
               </a>
             )}
           </div>
