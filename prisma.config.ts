@@ -2,6 +2,7 @@ import { config } from "dotenv";
 import { defineConfig } from "prisma/config";
 
 config({ path: ".env.local" });
+config({ path: ".env", override: false });
 config({ path: ".env.production.local", override: false });
 
 export default defineConfig({
@@ -11,5 +12,6 @@ export default defineConfig({
   },
   datasource: {
     url: process.env["DATABASE_URL"],
+    directUrl: process.env["DIRECT_URL"],
   },
 });
