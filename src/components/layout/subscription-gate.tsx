@@ -156,7 +156,7 @@ export function SubscriptionGate({ reason }: Props) {
               className="w-full"
               size="sm"
               variant="outline"
-              onClick={() => window.location.href = "mailto:satis@restopan.com"}
+              onClick={() => window.location.href = "/iletisim"}
               disabled={!!loading}
             >
               Teklif Alın

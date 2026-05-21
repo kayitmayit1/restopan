@@ -103,7 +103,7 @@ const PLANS = [
       "Yerinde kurulum & eğitim",
     ],
     cta: "Fiyat Teklifi Alın",
-    href: "mailto:satis@restopan.com",
+    href: "/iletisim",
     highlight: false,
   },
 ];

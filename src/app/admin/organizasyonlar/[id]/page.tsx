@@ -143,7 +143,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ id: 
                             {sub.currentPeriodEnd.toLocaleDateString("tr-TR")}
                           </td>
                           <td className="px-5 py-3 text-xs text-muted-foreground font-mono">
-                            {sub.iyzicoSubId ? sub.iyzicoSubId.slice(0, 20) + "…" : "—"}
+                            {sub.lsSubscriptionId ? sub.lsSubscriptionId.slice(0, 20) + "…" : "—"}
                           </td>
                         </tr>
                       );

@@ -68,7 +68,8 @@ interface Props {
   status: string;
   trialDaysLeft: number | null;
   periodEnd: string | null;
-  hasIyzicoSubscription: boolean;
+  hasActiveSubscription: boolean;
+  cancelAtPeriodEnd: boolean;
   termsAcceptedAt: string | null;
 }
 
@@ -77,7 +78,8 @@ export function BillingClient({
   status,
   trialDaysLeft,
   periodEnd,
-  hasIyzicoSubscription,
+  hasActiveSubscription,
+  cancelAtPeriodEnd,
   termsAcceptedAt,
 }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
@@ -113,7 +115,7 @@ export function BillingClient({
 
   async function handleUpgrade(targetPlan: "PROFESSIONAL" | "ENTERPRISE") {
     if (targetPlan === "ENTERPRISE") {
-      window.location.href = "mailto:satis@restopan.com?subject=Enterprise Plan Talebi";
+      window.open("mailto:satis@restopan.com?subject=Enterprise Plan Talebi", "_blank");
       return;
     }
     if (!termsAcceptedAt && !billingTermsChecked) {
@@ -203,7 +205,7 @@ export function BillingClient({
       const res = await fetch("/api/billing/cancel", { method: "POST", credentials: "same-origin" });
       const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: unknown };
       if (data.success) {
-        toast.success("Abonelik iptal edildi. Starter plana geçildi.");
+        toast.success("Abonelik iptal edildi. Dönem sonuna kadar kullanmaya devam edebilirsiniz.");
         window.location.reload();
       } else {
         const msg =
@@ -226,7 +228,7 @@ export function BillingClient({
   };
 
   const currentStatus = statusLabel[status] ?? { label: status, variant: "secondary" as const };
-  const canCancel = hasIyzicoSubscription && (status === "ACTIVE" || status === "PAST_DUE");
+  const canCancel = !cancelAtPeriodEnd && (hasActiveSubscription || plan !== "STARTER") && (status === "ACTIVE" || status === "PAST_DUE");
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -305,14 +307,24 @@ export function BillingClient({
                 )}
               </div>
             )}
-            {hasIyzicoSubscription && status === "PAST_DUE" && (
+            {(hasActiveSubscription || plan !== "STARTER") && status === "PAST_DUE" && (
               <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
                 <AlertTriangle className="w-4 h-4" />
                 Ödeme sorunu için destek ile iletişime geçin
               </div>
             )}
           </div>
-          {periodEnd && (
+          {cancelAtPeriodEnd && periodEnd && (
+            <div className="mt-2 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              Aboneliğiniz{" "}
+              <strong>
+                {new Date(periodEnd).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
+              </strong>{" "}
+              tarihinde sona erecek. Bu tarihe kadar kullanmaya devam edebilirsiniz.
+            </div>
+          )}
+          {!cancelAtPeriodEnd && periodEnd && (
             <p className="text-xs text-muted-foreground mt-2">
               {status === "TRIALING" ? "Deneme süresi" : "Dönem"} bitiş:{" "}
               {new Date(periodEnd).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
@@ -377,7 +389,7 @@ export function BillingClient({
                 <Button
                   variant="outline"
                   className="w-full border-violet-200 text-violet-700 hover:bg-violet-50"
-                  onClick={() => handleUpgrade("ENTERPRISE")}
+                  onClick={() => router.push("/iletisim")}
                 >
                   Teklif Alın
                 </Button>

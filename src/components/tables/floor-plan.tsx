@@ -5,7 +5,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { TableStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Settings, RefreshCw, LayoutGrid, Pencil, Trash2 } from "lucide-react";
+import { Plus, Settings, RefreshCw, LayoutGrid, Pencil, Trash2, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { AddTableModal } from "./add-table-modal";
 import { useRouter } from "next/navigation";
@@ -72,12 +72,14 @@ interface TableFloorPlanProps {
   tables: Table[];
   locationId: string;
   organizationId: string;
+  organizationSlug: string;
 }
 
 export function TableFloorPlan({
   tables: initialTables,
   locationId,
   organizationId,
+  organizationSlug,
 }: TableFloorPlanProps) {
   const router = useRouter();
   const [tables, setTables] = useState(initialTables);
@@ -90,6 +92,17 @@ export function TableFloorPlan({
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const sections = Array.from(new Set(tables.map((t) => t.section || "Genel")));
+
+  async function downloadQR(table: Table) {
+    const url = `${window.location.origin}/m/${organizationSlug}?masa=${table.id}`;
+    const QRCode = (await import("qrcode")).default;
+    const canvas = document.createElement("canvas");
+    await QRCode.toCanvas(canvas, url, { width: 512, margin: 2 });
+    const link = document.createElement("a");
+    link.download = `qr-${table.name.replace(/\s+/g, "-")}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
 
   async function handleDelete(tableId: string) {
     try {
@@ -294,6 +307,17 @@ export function TableFloorPlan({
                   ))}
                 </div>
               </div>
+
+              {/* QR Code Download */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full gap-1.5"
+                onClick={() => downloadQR(selectedTable)}
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                QR Kod İndir
+              </Button>
 
               {/* Edit / Delete */}
               <div className="flex gap-2 pt-1 border-t">

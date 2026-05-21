@@ -1,142 +1,138 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { PLANS } from "@/lib/iyzico";
+import { PLANS, verifyWebhookSignature } from "@/lib/lemonsqueezy";
 
-// iyzico sends webhook events as JSON POST requests
-// Event types: subscription.order.success, subscription.order.failure,
-//              subscription.canceled, subscription.upgraded, subscription.activated
+// LemonSqueezy webhook events:
+// subscription_created, subscription_updated, subscription_cancelled,
+// subscription_payment_success, subscription_payment_failed
+
+function planFromVariantId(variantId: string | number | undefined): "PROFESSIONAL" | "ENTERPRISE" {
+  const id = String(variantId ?? "");
+  if (id === PLANS.ENTERPRISE.variantId) return "ENTERPRISE";
+  return "PROFESSIONAL";
+}
 
 export async function POST(req: NextRequest) {
-  // Webhook secret validation — configure iyzico to POST to /api/billing/webhook?secret=YOUR_SECRET
-  const secret = process.env.IYZICO_WEBHOOK_SECRET;
-  if (secret) {
-    const received = new URL(req.url).searchParams.get("secret");
-    if (received !== secret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const rawBody = await req.text();
+  const signature = req.headers.get("x-signature") ?? "";
+
+  if (!verifyWebhookSignature(rawBody, signature)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let payload: Record<string, unknown>;
   try {
-    const body = await req.json() as Record<string, unknown>;
-    const eventType = body.eventType as string | undefined;
-    const data = body.data as Record<string, unknown> | undefined;
-
-    if (!eventType || !data) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-    }
-
-    const subRefCode = data.referenceCode as string | undefined;
-    const planCode = data.pricingPlanReferenceCode as string | undefined;
-
-    switch (eventType) {
-      case "subscription.order.success": {
-        if (!subRefCode) break;
-        const plan =
-          planCode === PLANS.PROFESSIONAL.planCode
-            ? "PROFESSIONAL"
-            : planCode === PLANS.ENTERPRISE.planCode
-            ? "ENTERPRISE"
-            : "PROFESSIONAL";
-
-        const startDate = data.startDate ? new Date(data.startDate as string) : new Date();
-        const endDate = data.endDate
-          ? new Date(data.endDate as string)
-          : new Date(Date.now() + 30 * 86400000);
-
-        const sub = await db.subscription.findFirst({
-          where: { iyzicoSubId: subRefCode },
-        });
-        if (sub) {
-          await db.subscription.update({
-            where: { id: sub.id },
-            data: { status: "ACTIVE", currentPeriodStart: startDate, currentPeriodEnd: endDate },
-          });
-          await db.organization.update({
-            where: { id: sub.organizationId },
-            data: { plan },
-          });
-        }
-        break;
-      }
-
-      case "subscription.order.failure": {
-        if (!subRefCode) break;
-        await db.subscription.updateMany({
-          where: { iyzicoSubId: subRefCode },
-          data: { status: "PAST_DUE" },
-        });
-        break;
-      }
-
-      case "subscription.canceled": {
-        if (!subRefCode) break;
-        const sub = await db.subscription.findFirst({
-          where: { iyzicoSubId: subRefCode },
-        });
-        if (sub) {
-          await db.subscription.update({
-            where: { id: sub.id },
-            data: { status: "CANCELED" },
-          });
-          await db.organization.update({
-            where: { id: sub.organizationId },
-            data: { plan: "STARTER" },
-          });
-        }
-        break;
-      }
-
-      case "subscription.activated": {
-        if (!subRefCode) break;
-        const plan =
-          planCode === PLANS.PROFESSIONAL.planCode
-            ? "PROFESSIONAL"
-            : planCode === PLANS.ENTERPRISE.planCode
-            ? "ENTERPRISE"
-            : "PROFESSIONAL";
-        const startDate = data.startDate ? new Date(data.startDate as string) : new Date();
-        const endDate = data.endDate
-          ? new Date(data.endDate as string)
-          : new Date(Date.now() + 30 * 86400000);
-        const sub = await db.subscription.findFirst({ where: { iyzicoSubId: subRefCode } });
-        if (sub) {
-          await db.subscription.update({
-            where: { id: sub.id },
-            data: { status: "ACTIVE", iyzicoPlanCode: planCode ?? sub.iyzicoPlanCode, currentPeriodStart: startDate, currentPeriodEnd: endDate },
-          });
-          await db.organization.update({ where: { id: sub.organizationId }, data: { plan } });
-        }
-        break;
-      }
-
-      case "subscription.upgraded": {
-        if (!subRefCode || !planCode) break;
-        const plan =
-          planCode === PLANS.PROFESSIONAL.planCode
-            ? "PROFESSIONAL"
-            : planCode === PLANS.ENTERPRISE.planCode
-            ? "ENTERPRISE"
-            : "PROFESSIONAL";
-        const sub = await db.subscription.findFirst({
-          where: { iyzicoSubId: subRefCode },
-        });
-        if (sub) {
-          await db.subscription.update({
-            where: { id: sub.id },
-            data: { iyzicoPlanCode: planCode },
-          });
-          await db.organization.update({
-            where: { id: sub.organizationId },
-            data: { plan },
-          });
-        }
-        break;
-      }
-    }
-
-    return NextResponse.json({ received: true });
-  } catch (err) {
-    console.error("[billing/webhook]", err);
-    return NextResponse.json({ error: "Webhook error" }, { status: 500 });
+    payload = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
+
+  const meta = payload.meta as Record<string, unknown> | undefined;
+  const data = payload.data as Record<string, unknown> | undefined;
+  const eventName = meta?.event_name as string | undefined;
+  const customData = meta?.custom_data as Record<string, unknown> | undefined;
+
+  if (!eventName || !data) {
+    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  }
+
+  const attrs = data.attributes as Record<string, unknown> | undefined;
+  const lsSubId = String(data.id ?? "");
+  const variantId = String(attrs?.variant_id ?? "");
+  const orgId = String(customData?.org_id ?? "");
+
+  switch (eventName) {
+    case "subscription_created": {
+      if (!lsSubId || !orgId) break;
+      const plan = planFromVariantId(variantId);
+      const startDate = attrs?.current_period_start
+        ? new Date(attrs.current_period_start as string)
+        : new Date();
+      const endDate = attrs?.current_period_end
+        ? new Date(attrs.current_period_end as string)
+        : new Date(Date.now() + 30 * 86400000);
+
+      const orgSub = await db.subscription.findFirst({
+        where: { organizationId: orgId },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (orgSub) {
+        await db.subscription.update({
+          where: { id: orgSub.id },
+          data: {
+            lsSubscriptionId: lsSubId,
+            lsVariantId: variantId,
+            status: "ACTIVE",
+            currentPeriodStart: startDate,
+            currentPeriodEnd: endDate,
+          },
+        });
+      } else {
+        await db.subscription.create({
+          data: {
+            organizationId: orgId,
+            lsSubscriptionId: lsSubId,
+            lsVariantId: variantId,
+            status: "ACTIVE",
+            currentPeriodStart: startDate,
+            currentPeriodEnd: endDate,
+          },
+        });
+      }
+      await db.organization.update({ where: { id: orgId }, data: { plan } });
+      break;
+    }
+
+    case "subscription_updated":
+    case "subscription_payment_success": {
+      if (!lsSubId) break;
+      const plan = planFromVariantId(variantId);
+      const startDate = attrs?.current_period_start
+        ? new Date(attrs.current_period_start as string)
+        : new Date();
+      const endDate = attrs?.current_period_end
+        ? new Date(attrs.current_period_end as string)
+        : new Date(Date.now() + 30 * 86400000);
+
+      const sub = await db.subscription.findFirst({ where: { lsSubscriptionId: lsSubId } });
+      if (sub) {
+        await db.subscription.update({
+          where: { id: sub.id },
+          data: {
+            lsVariantId: variantId || sub.lsVariantId,
+            status: "ACTIVE",
+            currentPeriodStart: startDate,
+            currentPeriodEnd: endDate,
+          },
+        });
+        await db.organization.update({ where: { id: sub.organizationId }, data: { plan } });
+      }
+      break;
+    }
+
+    case "subscription_payment_failed": {
+      if (!lsSubId) break;
+      await db.subscription.updateMany({
+        where: { lsSubscriptionId: lsSubId },
+        data: { status: "PAST_DUE" },
+      });
+      break;
+    }
+
+    case "subscription_cancelled": {
+      if (!lsSubId) break;
+      const sub = await db.subscription.findFirst({ where: { lsSubscriptionId: lsSubId } });
+      if (sub) {
+        await db.subscription.update({
+          where: { id: sub.id },
+          data: { status: "CANCELED", cancelAtPeriodEnd: false },
+        });
+        await db.organization.update({ where: { id: sub.organizationId }, data: { plan: "STARTER" } });
+      }
+      break;
+    }
+  }
+
+  return NextResponse.json({ received: true });
 }

@@ -79,7 +79,7 @@ const FAQS: { category: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Ödeme yöntemi olarak ne kullanılıyor?",
-        a: "Abonelik ödemeleri iyzico altyapısı üzerinden gerçekleştirilir. Kredi kartı ve banka kartı desteklenmektedir.",
+        a: "Abonelik ödemeleri Lemon Squeezy altyapısı üzerinden gerçekleştirilir. Kredi kartı ve banka kartı desteklenmektedir.",
       },
       {
         q: "Planımı istediğim zaman iptal edebilir miyim?",

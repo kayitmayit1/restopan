@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { cancelSubscription } from "@/lib/iyzico";
+import { cancelSubscription } from "@/lib/lemonsqueezy";
 import { canManageBilling } from "@/lib/billing-guard";
 
 export async function POST() {
@@ -15,25 +15,20 @@ export async function POST() {
     orderBy: { createdAt: "desc" },
   });
 
-  if (!sub?.iyzicoSubId) {
-    return NextResponse.json({ error: "Aktif iyzico aboneliği bulunamadı" }, { status: 400 });
+  if (!sub) {
+    return NextResponse.json({ error: "Aktif abonelik bulunamadı" }, { status: 400 });
   }
 
   try {
-    const result = (await cancelSubscription(sub.iyzicoSubId)) as { status?: string };
-    const st = result?.status?.toLowerCase?.() ?? "";
-    if (st !== "success") {
-      console.warn("[billing/cancel] iyzico unexpected status:", result);
-      return NextResponse.json({ error: "İyzico abonelik iptali başarısız" }, { status: 502 });
+    if (sub.lsSubscriptionId) {
+      // LemonSqueezy'de dönem sonunda iptal et (anında değil)
+      await cancelSubscription(sub.lsSubscriptionId);
     }
 
+    // DB'de sadece "dönem sonunda iptal" bayrağını set et, plan değişmez
     await db.subscription.update({
       where: { id: sub.id },
-      data: { status: "CANCELED" },
-    });
-    await db.organization.update({
-      where: { id: session.user.organizationId },
-      data: { plan: "STARTER" },
+      data: { cancelAtPeriodEnd: true },
     });
 
     return NextResponse.json({ success: true });

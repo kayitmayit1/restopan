@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { cancelSubscription } from "@/lib/iyzico";
+import { cancelSubscription } from "@/lib/lemonsqueezy";
 import { canManageBilling } from "@/lib/billing-guard";
 
 export async function POST() {
@@ -27,17 +27,9 @@ export async function POST() {
   farFuture.setFullYear(farFuture.getFullYear() + 100);
 
   let canceledPaidRemote = false;
-  if (sub?.iyzicoSubId && (sub.status === "ACTIVE" || sub.status === "PAST_DUE")) {
+  if (sub?.lsSubscriptionId && (sub.status === "ACTIVE" || sub.status === "PAST_DUE")) {
     try {
-      const result = (await cancelSubscription(sub.iyzicoSubId)) as { status?: string };
-      const st = result?.status?.toLowerCase?.() ?? "";
-      if (st !== "success") {
-        console.warn("[billing/downgrade] iyzico unexpected status:", result);
-        return NextResponse.json(
-          { error: "Abonelik iptali tamamlanamadığı için plan düşürülemedi." },
-          { status: 502 }
-        );
-      }
+      await cancelSubscription(sub.lsSubscriptionId);
       canceledPaidRemote = true;
     } catch (err) {
       console.error("[billing/downgrade] cancel", err);
@@ -61,7 +53,7 @@ export async function POST() {
               status: "ACTIVE",
               currentPeriodStart: now,
               currentPeriodEnd: farFuture,
-              ...(canceledPaidRemote ? { iyzicoSubId: null, iyzicoPlanCode: null } : {}),
+              ...(canceledPaidRemote ? { lsSubscriptionId: null, lsVariantId: null } : {}),
             },
           }),
         ]

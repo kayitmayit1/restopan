@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     const existingSub = org.subscriptions[0];
 
-    if (existingSub?.iyzicoSubId) {
+    if (existingSub?.lsSubscriptionId) {
       return NextResponse.json(
         { error: "Ödemeli bir abonelik kaydı olan hesaplarda ücretsiz deneme başlatılamaz." },
         { status: 400 }
@@ -75,7 +75,6 @@ export async function POST(req: NextRequest) {
     const periodEnd = new Date(now);
     periodEnd.setDate(periodEnd.getDate() + 14);
 
-    // Update or create subscription
     if (existingSub) {
       await db.subscription.update({
         where: { id: existingSub.id },
@@ -96,7 +95,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Update organization plan
     await db.organization.update({
       where: { id: org.id },
       data: { plan: "PROFESSIONAL" },

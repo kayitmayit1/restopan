@@ -20,11 +20,17 @@ export default async function MasalarPage() {
     orderBy: { name: "asc" },
   });
 
-  const locationId = session.user.locationId || (
-    await db.location.findFirst({
-      where: { organizationId: session.user.organizationId },
-    })
-  )?.id;
+  const [org, locationResult] = await Promise.all([
+    db.organization.findUnique({
+      where: { id: session.user.organizationId },
+      select: { slug: true },
+    }),
+    session.user.locationId
+      ? Promise.resolve({ id: session.user.locationId })
+      : db.location.findFirst({ where: { organizationId: session.user.organizationId } }),
+  ]);
+
+  const locationId = locationResult?.id;
 
   return (
     <div>
@@ -34,6 +40,7 @@ export default async function MasalarPage() {
           tables={tables}
           locationId={locationId || ""}
           organizationId={session.user.organizationId}
+          organizationSlug={org?.slug ?? ""}
         />
       </div>
     </div>

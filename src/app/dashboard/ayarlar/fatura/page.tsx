@@ -31,7 +31,8 @@ export default async function FaturaPage() {
           status={sub?.status ?? "ACTIVE"}
           trialDaysLeft={trialDaysLeft}
           periodEnd={sub?.currentPeriodEnd?.toISOString() ?? null}
-          hasIyzicoSubscription={!!sub?.iyzicoSubId}
+          hasActiveSubscription={!!sub?.lsSubscriptionId}
+          cancelAtPeriodEnd={sub?.cancelAtPeriodEnd ?? false}
           termsAcceptedAt={org.termsAcceptedAt?.toISOString() ?? null}
         />
       </div>

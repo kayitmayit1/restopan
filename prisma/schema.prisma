@@ -65,9 +65,10 @@ enum PlanType {
 model Subscription {
   id                 String             @id @default(cuid())
   organizationId     String
-  iyzicoSubId        String?            @unique
-  iyzicoPlanCode     String?
+  lsSubscriptionId   String?            @unique
+  lsVariantId        String?
   status             SubscriptionStatus @default(ACTIVE)
+  cancelAtPeriodEnd  Boolean            @default(false)
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
   createdAt          DateTime           @default(now())
