@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Wifi, Instagram, Facebook, Clock, Flame, ChevronUp } from "lucide-react";
+import { Wifi, Clock, Flame, ChevronUp } from "lucide-react";
 
 interface Variant {
   id: string;
@@ -215,10 +215,9 @@ export function MenuUI({ org, categories, tableName }: Props) {
                 href={org.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors"
-                aria-label="Instagram"
+                className="px-4 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors text-sm font-semibold text-pink-500"
               >
-                <Instagram className="w-5 h-5 text-pink-500" />
+                Instagram
               </a>
             )}
             {org.facebookUrl && (
@@ -226,10 +225,9 @@ export function MenuUI({ org, categories, tableName }: Props) {
                 href={org.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors"
-                aria-label="Facebook"
+                className="px-4 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors text-sm font-semibold text-blue-600"
               >
-                <Facebook className="w-5 h-5 text-blue-600" />
+                Facebook
               </a>
             )}
             {org.twitterUrl && (
@@ -237,10 +235,9 @@ export function MenuUI({ org, categories, tableName }: Props) {
                 href={org.twitterUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors"
-                aria-label="X / Twitter"
+                className="px-4 h-10 bg-white border rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors text-sm font-semibold text-gray-700"
               >
-                <span className="text-sm font-bold text-gray-700">𝕏</span>
+                𝕏
               </a>
             )}
           </div>
