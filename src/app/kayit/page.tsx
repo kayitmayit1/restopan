@@ -320,22 +320,22 @@ function KayitContent() {
                   )}
                   <div className="space-y-2">
                     <Label htmlFor="organizationName">Restoran Adı</Label>
-                    <Input id="organizationName" placeholder="Örn: Lezzet Durağı" {...register("organizationName")} />
+                    <Input id="organizationName" placeholder="Örn: Lezzet Durağı" autoComplete="off" {...register("organizationName")} />
                     {errors.organizationName && <p className="text-xs text-destructive">{errors.organizationName.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="name">Ad Soyad</Label>
-                    <Input id="name" placeholder="Ahmet Yılmaz" {...register("name")} />
+                    <Input id="name" placeholder="Ahmet Yılmaz" autoComplete="off" {...register("name")} />
                     {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">E-posta</Label>
-                    <Input id="email" type="email" placeholder="ornek@restoran.com" {...register("email")} />
+                    <Input id="email" type="email" placeholder="ornek@restoran.com" autoComplete="off" {...register("email")} />
                     {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Şifre</Label>
-                    <Input id="password" type="password" placeholder="En az 6 karakter" {...register("password")} />
+                    <Input id="password" type="password" placeholder="En az 6 karakter" autoComplete="new-password" {...register("password")} />
                     {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
                   </div>
                   <label className="flex items-start gap-2 text-xs text-muted-foreground leading-snug cursor-pointer select-none">

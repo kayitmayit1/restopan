@@ -11,6 +11,17 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const DISMISSED_KEY = "rp-pwa-install-dismissed";
+const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 gün
+
+function isDismissed(): boolean {
+  try {
+    const val = localStorage.getItem(DISMISSED_KEY);
+    if (!val) return false;
+    return Date.now() - parseInt(val, 10) < DISMISS_DURATION_MS;
+  } catch {
+    return false;
+  }
+}
 
 function getPlatform(): Platform {
   if (typeof navigator === "undefined") return null;
@@ -37,7 +48,7 @@ export function PWAInstallPrompt() {
 
   useEffect(() => {
     if (isStandalone()) return;
-    if (sessionStorage.getItem(DISMISSED_KEY)) return;
+    if (isDismissed()) return;
 
     const p = getPlatform();
     setPlatform(p);
@@ -60,7 +71,7 @@ export function PWAInstallPrompt() {
   }, []);
 
   function dismiss() {
-    sessionStorage.setItem(DISMISSED_KEY, "1");
+    try { localStorage.setItem(DISMISSED_KEY, String(Date.now())); } catch { /* ignore */ }
     setShowPrompt(false);
     setShowIOSGuide(false);
   }

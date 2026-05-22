@@ -88,7 +88,7 @@ export default function GirisPage() {
                   id="email"
                   type="email"
                   placeholder="ornek@restoran.com"
-                  autoComplete="email"
+                  autoComplete="off"
                   {...register("email")}
                 />
 
@@ -107,7 +107,7 @@ export default function GirisPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    autoComplete="current-password"
+                    autoComplete="off"
                     {...register("password")}
                   />
 
