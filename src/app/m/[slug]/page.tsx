@@ -75,12 +75,23 @@ export default async function MenuPage({ params, searchParams }: Props) {
   if (!org) notFound();
 
   let tableName: string | null = null;
+  let locationId: string | null = null;
+
   if (tableId) {
     const table = await db.table.findUnique({
       where: { id: tableId },
-      select: { name: true },
+      select: { name: true, locationId: true },
     });
     tableName = table?.name ?? null;
+    locationId = table?.locationId ?? null;
+  }
+
+  if (!locationId) {
+    const location = await db.location.findFirst({
+      where: { organizationId: org.id },
+      select: { id: true },
+    });
+    locationId = location?.id ?? null;
   }
 
   const categories = org.menuCategories.filter((c) => c.items.length > 0);
@@ -100,6 +111,9 @@ export default async function MenuPage({ params, searchParams }: Props) {
       }}
       categories={categories}
       tableName={tableName}
+      tableId={tableId ?? null}
+      orgId={org.id}
+      locationId={locationId}
     />
   );
 }

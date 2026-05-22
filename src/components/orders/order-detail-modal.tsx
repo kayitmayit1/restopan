@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { X, Printer, Loader2, Bike, Phone, MapPin, User } from "lucide-react";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
-import { OrderStatus, PaymentStatus, OrderType } from "@prisma/client";
+import { OrderStatus, PaymentStatus, OrderType, OrderSource } from "@prisma/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ interface Order {
   type: OrderType;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
+  source?: OrderSource;
   totalAmount: number;
   subtotal?: number;
   taxAmount?: number;
@@ -108,7 +109,12 @@ export function OrderDetailModal({
       <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b">
           <div>
-            <h2 className="font-semibold">{order.orderNumber}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold">{order.orderNumber}</h2>
+              {order.source === "ONLINE" && (
+                <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">QR Sipariş</span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">{formatDateTime(order.createdAt)}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -170,6 +176,25 @@ export function OrderDetailModal({
               </div>
             )}
           </div>
+
+          {/* Online takeout customer info */}
+          {order.source === "ONLINE" && order.type === "TAKEOUT" && order.deliveryName && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 mb-1">
+                <User className="w-3.5 h-3.5" />Paket Müşteri Bilgileri
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <User className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                <span className="font-medium">{order.deliveryName}</span>
+              </div>
+              {order.deliveryPhone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                  <a href={`tel:${order.deliveryPhone}`} className="text-blue-700 underline">{order.deliveryPhone}</a>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Delivery info */}
           {order.type === "DELIVERY" && order.deliveryName && (

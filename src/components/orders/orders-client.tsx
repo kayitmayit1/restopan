@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, formatDateTime, cn } from "@/lib/utils";
-import { OrderStatus, PaymentStatus, OrderType } from "@prisma/client";
+import { OrderStatus, PaymentStatus, OrderType, OrderSource } from "@prisma/client";
 import { Search, Eye, RefreshCw } from "lucide-react";
 import { OrderDetailModal } from "./order-detail-modal";
 import { useRouter } from "next/navigation";
@@ -41,6 +41,7 @@ interface Order {
   type: OrderType;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
+  source: OrderSource;
   totalAmount: number;
   createdAt: Date;
   table: { name: string } | null;
@@ -71,6 +72,9 @@ export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
       es.onmessage = (e) => {
         try {
           const { event, data } = JSON.parse(e.data);
+          if (event === "order:new") {
+            router.refresh();
+          }
           if (event === "order:updated") {
             setOrders((prev) => prev.map((o) => o.id === data.id ? { ...o, status: data.status as OrderStatus } : o));
             setSelectedOrder((prev) => prev?.id === data.id && prev ? { ...prev, status: data.status as OrderStatus } : prev);
@@ -190,10 +194,15 @@ export function OrdersClient({ orders: initialOrders }: { orders: Order[] }) {
                     <td className="px-4 py-3">
                       <div>
                         {order.table && <p className="font-medium">{order.table.name}</p>}
-                        {order.type === "DELIVERY" && order.deliveryName && (
+                        {(order.type === "DELIVERY" || (order.source === "ONLINE" && order.type === "TAKEOUT")) && order.deliveryName && (
                           <p className="font-medium text-orange-700">{order.deliveryName}</p>
                         )}
-                        <p className="text-xs text-muted-foreground">{typeLabels[order.type]}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-xs text-muted-foreground">{typeLabels[order.type]}</p>
+                          {order.source === "ONLINE" && (
+                            <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">QR</span>
+                          )}
+                        </div>
                         {order.type === "DELIVERY" && order.deliveryAddress && (
                           <p className="text-xs text-muted-foreground truncate max-w-32">{order.deliveryAddress}</p>
                         )}
