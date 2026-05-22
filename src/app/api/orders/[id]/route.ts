@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { broadcast } from "@/lib/sse";
+import { sendOrderReceipt } from "@/lib/email";
 
 export async function PATCH(
   req: NextRequest,
@@ -16,7 +17,11 @@ export async function PATCH(
 
   const order = await db.order.findUnique({
     where: { id },
-    include: { location: { select: { organizationId: true } } },
+    include: {
+      location: { select: { organizationId: true } },
+      customer: { select: { email: true, name: true } },
+      items: { include: { menuItem: { select: { name: true } } } },
+    },
   });
 
   if (!order || order.location.organizationId !== session.user.organizationId)
@@ -52,6 +57,29 @@ export async function PATCH(
 
     if (order.tableId) {
       await db.table.update({ where: { id: order.tableId }, data: { status: "AVAILABLE" } });
+    }
+
+    if (order.customer?.email) {
+      const org = await db.organization.findUnique({
+        where: { id: session.user.organizationId },
+        select: { name: true },
+      });
+      sendOrderReceipt({
+        to: order.customer.email,
+        customerName: order.customer.name ?? "Müşteri",
+        restaurantName: org?.name ?? "Restoran",
+        orderNumber: order.orderNumber,
+        items: order.items.map((i) => ({
+          name: i.menuItem?.name ?? "Ürün",
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        })),
+        subtotal: order.subtotal,
+        taxAmount,
+        discountAmount: order.discountAmount,
+        totalAmount: order.totalAmount,
+        paymentMethod: body.payment.method,
+      }).catch(() => {}); // fire-and-forget, ödemeyi bloklamamalı
     }
 
     broadcast(session.user.organizationId, "order:updated", {

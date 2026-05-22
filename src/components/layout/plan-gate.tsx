@@ -37,7 +37,7 @@ export function PlanGate({ feature, requiredPlan = "PROFESSIONAL" }: Props) {
         <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-left space-y-2">
           <div className="flex items-center gap-2 text-sm font-semibold text-primary">
             <Zap className="w-4 h-4" />
-            Professional — ₺799/ay
+            Professional — ₺999/ay
           </div>
           <ul className="text-xs text-muted-foreground space-y-1 pl-6">
             <li>Analitik & finansal raporlar</li>

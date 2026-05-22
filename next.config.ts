@@ -1,15 +1,16 @@
 import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const baseConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
   turbopack: {},
-  serverExternalPackages: ["iyzipay", "pg", "@prisma/adapter-pg", "@prisma/client"],
+  serverExternalPackages: ["pg", "@prisma/adapter-pg", "@prisma/client"],
 };
 
-export default withPWA({
+const pwaConfig = withPWA({
   dest: "public",
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
@@ -68,3 +69,12 @@ export default withPWA({
     ],
   },
 })(baseConfig);
+
+export default withSentryConfig(pwaConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  telemetry: false,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

@@ -10,7 +10,7 @@ const FROM = process.env.RESEND_FROM ?? "RestoPan <onboarding@resend.dev>";
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const rl = rateLimit(`pw-reset:${ip}`, 5, 15 * 60 * 1000); // 5 per 15 min per IP
+  const rl = await rateLimit(`pw-reset:${ip}`, 5, 15 * 60 * 1000); // 5 per 15 min per IP
   if (!rl.success) {
     return NextResponse.json({ error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." }, { status: 429 });
   }

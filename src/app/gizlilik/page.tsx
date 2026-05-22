@@ -38,7 +38,7 @@ export default function GizlilikPage() {
               <li>Hesap bilgileri: ad, e-posta adresi, şifre (şifrelenmiş)</li>
               <li>İletişim bilgileri: telefon numarası (isteğe bağlı)</li>
               <li>İşletme bilgileri: restoran adı, konum, işletme türü</li>
-              <li>Ödeme bilgileri: fatura adresi (ödeme aracı bilgileri iyzico tarafından saklanır)</li>
+              <li>Ödeme bilgileri: fatura adresi (kart bilgileri ödeme altyapısı tarafından saklanır, RestoPAN erişemez)</li>
               <li>Kullanım verileri: oturum açma zamanları, sayfa görüntülemeleri</li>
             </ul>
           </section>

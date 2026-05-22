@@ -35,8 +35,7 @@ export default function MesafeliSatisPage() {
             <p className="text-muted-foreground">
               İşbu metin, 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği çerçevesinde,
               RestoPAN markasıyla sunulan yazılım hizmeti (SaaS) aboneliklerine ilişkin ön bilgilendirme ile mesafeli sözleşmeyi
-              düzenlemek amacıyla hazırlanmıştır. Ödemeler şu aşamada satıcı tarafından iyzico «bireysel üyelik» kapsamında,
-              T.C. kimlik bilgisi ile tanınan işletici üzerinden tahsil edilebilir. Ödeme ve abonelik siparişi tamamlamadan önce bu metnin
+              düzenlemek amacıyla hazırlanmıştır. Ödeme ve abonelik siparişi tamamlamadan önce bu metnin
               okunması ve onaylanması gerekmektedir.
             </p>
           </section>
@@ -46,7 +45,7 @@ export default function MesafeliSatisPage() {
             <ul className="list-none text-muted-foreground space-y-1.5 pl-0">
               <li>
                 <span className="text-foreground font-medium">Nitelik:</span> Tacir sıfatına dayalı tüzel kişi («şirket») sıfatı yoktur;
-                yazılım hizmeti gerçek kişi sıfatında <strong>bireysel işletici</strong> tarafından sunulur ve ödemeler ilgili dönemde iyzico bireysel üyeliği üzerinden tahsil edilir.
+                yazılım hizmeti gerçek kişi sıfatında <strong>bireysel işletici</strong> tarafından sunulur.
               </li>
               <li>
                 <span className="text-foreground font-medium">Marka:</span> RestoPAN (hizmetin ticari görünüm adıdır)
@@ -70,7 +69,7 @@ export default function MesafeliSatisPage() {
               <li>
                 <span className="text-foreground font-medium">Kimlik ve iletişim:</span> İşleticinin{" "}
                 <strong>T.C. kimlik numarası</strong>, bildirilmiş ikamet / iş adresi ve yürürlükteki mevzuat gereği gereken diğer
-                iletişim bilgileri; ödemeyi güvenilir şekilde sonuçlandıran ödeme aracısı (iyzico) süreçlerinde, gerektiğinde düzenlenecek belgelerde
+                iletişim bilgileri; gerektiğinde düzenlenecek belgelerde
                 ve yazılı talebiniz doğrultusunda <a href="mailto:destek@restopan.com" className="text-primary hover:underline">destek@restopan.com</a> kanalıyla paylaşılır veya bildirilir. İleride tüzel kişiye geçilmesi halinde bu madde uygun şekilde güncellenir.
               </li>
             </ul>
@@ -98,7 +97,7 @@ export default function MesafeliSatisPage() {
             <h2 className="text-lg font-semibold mb-3">4. Toplam Fiyat ve Ödeme</h2>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
               <li>İlan edilen liste fiyatı KDV dahil veya ayrı olarak ödeme ekranında belirlenir.</li>
-              <li>Ödemeler güvenilir ödeme aracı (iyzico) üzerinden alınır.</li>
+              <li>Ödemeler güvenli ödeme altyapısı üzerinden alınır.</li>
               <li>Aboneliklerde seçilen paket ve döneme göre yinelenen ücret bakiyesi açıkça gösterilir.</li>
               <li>Hizmete erişim, ödemenin onaylanması ve hesabın etkinleşmesinden itibaren sağlanır.</li>
             </ul>

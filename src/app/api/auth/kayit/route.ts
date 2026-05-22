@@ -85,7 +85,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const rl = rateLimit(`signup:${ip}`, 10, 60 * 60 * 1000); // 10 signups per hour per IP
+  const rl = await rateLimit(`signup:${ip}`, 10, 60 * 60 * 1000); // 10 signups per hour per IP
   if (!rl.success) {
     return NextResponse.json({ message: "Çok fazla deneme. Lütfen daha sonra tekrar deneyin." }, { status: 429 });
   }

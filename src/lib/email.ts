@@ -42,6 +42,78 @@ export async function sendReservationConfirmation(opts: {
   });
 }
 
+export async function sendOrderReceipt(opts: {
+  to: string;
+  customerName: string;
+  restaurantName: string;
+  orderNumber: string;
+  items: { name: string; quantity: number; unitPrice: number }[];
+  subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  paymentMethod: string;
+}) {
+  const fmt = (n: number) =>
+    n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
+
+  const methodLabels: Record<string, string> = {
+    CASH: "Nakit",
+    CREDIT_CARD: "Kredi Kartı",
+    DEBIT_CARD: "Banka Kartı",
+    ONLINE: "Online",
+    GIFT_CARD: "Hediye Kartı",
+    LOYALTY_POINTS: "Puan",
+    BANK_TRANSFER: "Havale",
+  };
+
+  const rows = opts.items
+    .map(
+      (i) => `
+      <tr>
+        <td style="padding:6px 0;color:#333;">${i.name} x${i.quantity}</td>
+        <td style="padding:6px 0;text-align:right;color:#333;">${fmt(i.unitPrice * i.quantity)}</td>
+      </tr>`
+    )
+    .join("");
+
+  await resend.emails.send({
+    from: FROM,
+    to: opts.to,
+    subject: `Fişiniz — ${opts.restaurantName} #${opts.orderNumber}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;">
+        <h2 style="color:#111;margin-bottom:4px;">Teşekkürler, ${opts.customerName}!</h2>
+        <p style="color:#888;margin-bottom:24px;font-size:14px;">${opts.restaurantName} · Sipariş #${opts.orderNumber}</p>
+        <div style="background:#f9f9f9;border-radius:12px;padding:20px;margin-bottom:20px;">
+          <table style="width:100%;border-collapse:collapse;">
+            ${rows}
+            <tr><td colspan="2" style="border-top:1px solid #e5e5e5;padding-top:10px;"></td></tr>
+            <tr>
+              <td style="color:#888;padding:4px 0;font-size:13px;">Ara Toplam</td>
+              <td style="text-align:right;color:#888;font-size:13px;">${fmt(opts.subtotal)}</td>
+            </tr>
+            ${opts.discountAmount > 0 ? `<tr><td style="color:#e85d04;padding:4px 0;font-size:13px;">İndirim</td><td style="text-align:right;color:#e85d04;font-size:13px;">-${fmt(opts.discountAmount)}</td></tr>` : ""}
+            <tr>
+              <td style="color:#888;padding:4px 0;font-size:13px;">KDV</td>
+              <td style="text-align:right;color:#888;font-size:13px;">${fmt(opts.taxAmount)}</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;padding:8px 0;font-size:16px;">Toplam</td>
+              <td style="text-align:right;font-weight:700;font-size:16px;">${fmt(opts.totalAmount)}</td>
+            </tr>
+            <tr>
+              <td style="color:#888;padding:4px 0;font-size:13px;">Ödeme</td>
+              <td style="text-align:right;color:#888;font-size:13px;">${methodLabels[opts.paymentMethod] ?? opts.paymentMethod}</td>
+            </tr>
+          </table>
+        </div>
+        <p style="color:#aaa;font-size:12px;text-align:center;">Bizi tercih ettiğiniz için teşekkürler.</p>
+      </div>
+    `,
+  });
+}
+
 export async function sendStaffInvite(opts: {
   to: string;
   restaurantName: string;

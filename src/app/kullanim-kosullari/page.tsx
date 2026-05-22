@@ -44,7 +44,7 @@ export default function KullanimKosullariPage() {
             <h2 className="text-lg font-semibold mb-3">3. Abonelik ve Ödeme</h2>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
               <li>Ücretsiz plan sonsuza kadar ücretsiz kalır, plan limitleri geçerlidir.</li>
-              <li>Ücretli planlar aylık olarak iyzico üzerinden tahsil edilir.</li>
+              <li>Ücretli planlar aylık olarak güvenli ödeme altyapısı üzerinden tahsil edilir.</li>
               <li>İptal, mevcut dönem sonunda geçerli olur. Kısmi iade yapılmaz.</li>
               <li>Fiyat değişiklikleri 30 gün öncesinden bildirilir.</li>
               <li>

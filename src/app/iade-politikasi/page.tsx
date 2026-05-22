@@ -30,7 +30,7 @@ export default function IadePolitikasiPage() {
             <h2 className="text-lg font-semibold mb-3">1. Kapsam</h2>
             <p className="text-muted-foreground">
               Bu politika, RestoPAN markasıyla sunulan bulut yazılım hizmeti için ücret tahsilatını, iptal ve iade süreçlerini düzenler. Tahsilât,
-              uygun ödeme kuruluşu kanalıyla yapılır; satıcı taraf şu aşamada iyzico <strong>bireysel üyelik</strong> ile yürütülmektedir. Ayrıntılı
+              uygun ödeme kuruluşu kanalıyla yapılır. Ayrıntılı
               hukuki çerçeve{" "}
               <Link href="/mesafeli-satis-sozlesmesi" className="text-primary hover:underline">
                 Mesafeli Satış Sözleşmesi

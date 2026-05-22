@@ -31,7 +31,7 @@ const FAQS = [
       },
       {
         q: "Professional plan faturası nasıl kesilir?",
-        a: "Professional plan aylık ₺799 olarak faturalandırılır. Ödeme iyzico altyapısı üzerinden güvenli şekilde gerçekleştirilir. Fatura her ay otomatik olarak e-posta adresinize iletilir.",
+        a: "Professional plan aylık ₺999 olarak faturalandırılır. Ödeme güvenli şekilde gerçekleştirilir. Fatura her ay otomatik olarak e-posta adresinize iletilir.",
       },
     ],
   },
