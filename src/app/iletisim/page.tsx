@@ -27,7 +27,7 @@ const CHANNELS = [
     icon: MessageSquare,
     title: "WhatsApp Destek",
     desc: "Professional ve Enterprise kullanıcılara hızlı destek.",
-    detail: "+90 (536) 773 62 42",
+    detail: "",
     href: "https://wa.me/905367736242",
     badge: "≤1 saat yanıt (09–22)",
     badgeColor: "bg-green-50 text-green-700",

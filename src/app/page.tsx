@@ -68,7 +68,7 @@ const PLANS = [
   },
   {
     name: "Professional",
-    price: "₺999",
+    price: "₺599",
     sub: "/ ay",
     icon: Rocket,
     color: "text-primary",
@@ -237,11 +237,10 @@ export default async function LandingPage() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
-                      item.active
+                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${item.active
                         ? "bg-primary text-white"
                         : "text-gray-400 hover:text-white hover:bg-white/5"
-                    }`}
+                      }`}
                   >
                     <item.icon className="w-3.5 h-3.5 flex-shrink-0" />
                     {item.label}
@@ -340,11 +339,10 @@ export default async function LandingPage() {
                         ].map((t) => (
                           <div
                             key={t.n}
-                            className={`rounded-lg flex items-center justify-center text-[10px] font-bold h-8 ${
-                              t.s === "occ" ? "bg-primary/10 text-primary" :
-                              t.s === "res" ? "bg-amber-50 text-amber-600" :
-                              "bg-gray-50 text-gray-300 border border-dashed border-gray-200"
-                            }`}
+                            className={`rounded-lg flex items-center justify-center text-[10px] font-bold h-8 ${t.s === "occ" ? "bg-primary/10 text-primary" :
+                                t.s === "res" ? "bg-amber-50 text-amber-600" :
+                                  "bg-gray-50 text-gray-300 border border-dashed border-gray-200"
+                              }`}
                           >
                             {t.n}
                           </div>
@@ -379,11 +377,10 @@ export default async function LandingPage() {
                               <p className="text-[9px] text-gray-400 truncate">{o.items}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <span className={`block text-[9px] font-bold px-1 py-0.5 rounded ${
-                                o.status === "READY" ? "bg-emerald-50 text-emerald-600" :
-                                o.status === "PREPARING" ? "bg-amber-50 text-amber-600" :
-                                "bg-blue-50 text-blue-600"
-                              }`}>
+                              <span className={`block text-[9px] font-bold px-1 py-0.5 rounded ${o.status === "READY" ? "bg-emerald-50 text-emerald-600" :
+                                  o.status === "PREPARING" ? "bg-amber-50 text-amber-600" :
+                                    "bg-blue-50 text-blue-600"
+                                }`}>
                                 {o.status === "READY" ? "Hazır" : o.status === "PREPARING" ? "Yapılıyor" : "Yeni"}
                               </span>
                             </div>
@@ -438,11 +435,11 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Stats */}
+     
       <section className="py-16 border-y">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { value: "Türkiye", label: "Yerli & Milli Yazılım" },
+            
             { value: "15 dk", label: "Ortalama Kurulum" },
             { value: "09–22", label: "Destek Saatleri" },
             { value: "≤1 saat", label: "Yanıt Süresi" },
@@ -455,7 +452,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-  
+
       {/* Pricing */}
       <section id="fiyatlar" className="bg-gray-50 py-24">
         <div className="max-w-5xl mx-auto px-6">
@@ -540,7 +537,7 @@ export default async function LandingPage() {
       </section>
 
 
-    {/* Testimonials */}
+      {/* Testimonials */}
       <section id="yorumlar" className="py-24">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">

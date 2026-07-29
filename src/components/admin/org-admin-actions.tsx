@@ -13,7 +13,7 @@ interface Props {
 
 const plans = [
   { value: "STARTER", label: "Starter", desc: "Ücretsiz" },
-  { value: "PROFESSIONAL", label: "Professional", desc: "₺999/ay" },
+  { value: "PROFESSIONAL", label: "Professional", desc: "₺599/ay" },
   { value: "ENTERPRISE", label: "Enterprise", desc: "₺2499/ay" },
 ];
 
@@ -90,11 +90,10 @@ export function OrgAdminActions({ orgId, currentPlan, activeSub }: Props) {
               key={p.value}
               onClick={() => changePlan(p.value)}
               disabled={loading || currentPlan === p.value}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-all ${
-                currentPlan === p.value
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-all ${currentPlan === p.value
                   ? "border-primary bg-primary/5 text-primary font-medium"
                   : "border-border hover:border-primary/50 hover:bg-muted/30"
-              } disabled:opacity-50`}
+                } disabled:opacity-50`}
             >
               <span>{p.label}</span>
               <span className="text-xs text-muted-foreground">{p.desc}</span>
@@ -112,9 +111,8 @@ export function OrgAdminActions({ orgId, currentPlan, activeSub }: Props) {
               <button
                 key={d}
                 onClick={() => setTrialDays(d)}
-                className={`flex-1 py-1.5 text-xs font-medium transition-colors ${
-                  trialDays === d ? "bg-primary text-white" : "hover:bg-muted"
-                }`}
+                className={`flex-1 py-1.5 text-xs font-medium transition-colors ${trialDays === d ? "bg-primary text-white" : "hover:bg-muted"
+                  }`}
               >
                 {d}g
               </button>

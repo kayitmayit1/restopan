@@ -30,7 +30,7 @@ const PLANS = [
   {
     id: "PROFESSIONAL",
     name: "Professional",
-    price: "₺999/ay",
+    price: "₺599/ay",
     icon: Rocket,
     color: "text-primary",
     bg: "bg-primary/5",

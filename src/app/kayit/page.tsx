@@ -52,7 +52,7 @@ const PLANS = [
     name: "Professional",
     badge: "En Popüler",
     price: "14 Gün Ücretsiz",
-    sub: "· Sonra ₺999/ay",
+    sub: "· Sonra ₺599/ay",
     icon: Rocket,
     color: "text-primary",
     highlight: true,
